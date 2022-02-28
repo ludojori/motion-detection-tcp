@@ -4,23 +4,28 @@
 #include <socketapi.h>
 #include <winsock.h>
 
-#define SENS_LENGTH 8
+#define SENSITIVITY_LENGTH 8
 
 bool send_sensitivity(int socketID, uint64_t sensitivity)
 {
-    char buffer[SENS_LENGTH];
-    for (int i = SENS_LENGTH - 1; i >= 0; i--)
+    char buffer[SENSITIVITY_LENGTH];
+    for (int i = SENSITIVITY_LENGTH - 1; i >= 0; i--)
     {
-        buffer[i] = (sensitivity >> i * SENS_LENGTH) & 0xFF;
+        buffer[i] = (sensitivity >> i * SENSITIVITY_LENGTH) & 0xFF;
     }
 
-    int sending = send(socketID, buffer, SENS_LENGTH, 0);
+    int sending = send(socketID, buffer, SENSITIVITY_LENGTH, 0);
     if (sending == ERROR)
     {
         return false;
     }
 
     return true;
+}
+
+void save_to_png(uint32_t width, uint32_t height, char* bytes)
+{
+
 }
 
 int main(int argc, char** args)
@@ -59,10 +64,10 @@ int main(int argc, char** args)
         return 1;
     }
 
-    char input = ' ';
-    while (input != 'q')
+    char buffer[1000000000];
+    while (true)
     {
-        std::cin >> input;
+        int bytesReceived = recv(socketID, buffer, 10000, 0);
     }
 
     closesocket(socketID);
