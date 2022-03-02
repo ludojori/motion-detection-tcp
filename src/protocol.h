@@ -2,6 +2,8 @@
 #define PROTOCOL_H
 #include <cstdint>
 
+#define SENSITIVITY_LENGTH 8
+
 enum class Status : char
 {
 	STILL_IMAGE, MOTION_DETECTED

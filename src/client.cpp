@@ -1,76 +1,84 @@
-//#include <netdb.h>
-//#include <netinet/in.h>
-#include <iostream>
-#include <socketapi.h>
-#include <winsock.h>
+#include "common.h"
+#include "protocol.h"
+#include <thread>
+/* 
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <sys/socket.h> */
 
-#define SENSITIVITY_LENGTH 8
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
-bool send_sensitivity(int socketID, uint64_t sensitivity)
+//server accepts char messages
+bool send_sensitivity(int socketID, uint64_t& sensitivity)
 {
-    char buffer[SENSITIVITY_LENGTH];
-    for (int i = SENSITIVITY_LENGTH - 1; i >= 0; i--)
-    {
-        buffer[i] = (sensitivity >> i * SENSITIVITY_LENGTH) & 0xFF;
-    }
-
-    int sending = send(socketID, buffer, SENSITIVITY_LENGTH, 0);
-    if (sending == ERROR)
+    std::cout << sensitivity << std::endl;
+    int sending = send(socketID, &sensitivity, SENSITIVITY_LENGTH, 0);
+    if (sending == -1)
     {
         return false;
     }
-
+    
     return true;
 }
 
-void save_to_png(uint32_t width, uint32_t height, char* bytes)
-{
 
+void sendingTCP (int sockID, Request request)
+{
+	if(request.command == Command::MESSAGE)
+	{
+		std::cout << "Message: " << request.data << std::endl;
+		send(sockID, &request.command, sizeof(request.command), 0);
+		int len = std::strlen(request.data) + 1;
+		send(sockID, &len, sizeof(len), 0);
+		send(sockID, request.data, len, 0);
+	}
 }
 
-int main(int argc, char** args)
+void disconnect()
 {
-    if (argc < 4)
-    {
-        std::cerr << "Invalid number of parameters." << std::endl;
-        return 1;
-    }
+	//Send disconnect message and server checks if the message is not disconnect, than it removes the client
+    //close(sockID)
+}
 
-    hostent* host = gethostbyname(args[1]);
+int main(int argc, char **args)
+{
+	if(argc != 3) {
+		return -1;
+	}
 
-    int socketID = socket(AF_INET, SOCK_STREAM, 0);
-    if (socketID == SOCKET_ERROR)
-    {
-        std::cerr << "Failed to create socket." << std::endl;
-        return 1;
-    }
+	int sockID = 0;
 
-    sockaddr_in serverAddress;
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons((u_short)strtoul(args[2], NULL, 0));
-    std::memcpy(&serverAddress.sin_addr.s_addr, host->h_addr, host->h_length);
+    uint64_t sens; //optimise or get a variable
+    sens = atoi(args[2]); 
+    
+	hostent *host = gethostbyname(args[1]);
 
-    int connection = connect(socketID, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
-    if (connection == ERROR_NOT_CONNECTED)
-    {
-        std::cerr << "Failed to connect to server." << std::endl;
-        return 1;
-    }
+	sockID = socket(AF_INET, SOCK_STREAM, 0);
+	// server address
+	sockaddr_in serverAddress;
+	serverAddress.sin_family = AF_INET;
+	serverAddress.sin_port = htons(5588);
+	std::memcpy(&serverAddress.sin_addr.s_addr, host->h_addr, host->h_length);
 
-    uint64_t sensitivity = atoi(args[3]);
-    if (!send_sensitivity(socketID, sensitivity))
-    {
-        std::cerr << "Failed to send sensitivity threshold." << std::endl;
-        return 1;
-    }
+    std::cout <<"Sensitivity: " << sens << std::endl;
 
-    char buffer[1000000000];
+	connect(sockID, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
+    std::cout <<"Sensitivity: " << sens << std::endl;
+	//std::cout << "before send\n";
+	send_sensitivity(sockID, sens);
+	//std::cout << "after send\n";
+
+   /*  char buffer[1000000000];
     while (true)
     {
         int bytesReceived = recv(socketID, buffer, 10000, 0);
-    }
-
-    closesocket(socketID);
-
-    return 0;
+    } */ 
+    close(sockID); 
 }
