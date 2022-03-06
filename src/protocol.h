@@ -1,8 +1,5 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
-#include <stdint.h>
-
-#define MAX_IMAGE_RESOLUTION 1000000;
 
 enum class Error : int
 {
@@ -13,7 +10,8 @@ enum class Error : int
 	BIND,
 	CONNECTION,
 	SEND,
-	RECEIVE
+	RECEIVE,
+	CLOSE
 };
 
 enum class Status : char
@@ -25,9 +23,9 @@ enum class Status : char
 struct ServerNotification
 {
 	Status status;
-	uint32_t width;
-	uint32_t height;
-	char* image;
+	int width;
+	int height;
+	unsigned int* image;
 };
 
 #endif
