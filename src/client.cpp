@@ -3,96 +3,38 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <time.h>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 #include "protocol.h"
 
-#define SENSITIVITY_LENGTH 8
-
-bool try_send_sensitivity(int socketID, uint64_t sensitivity)
+bool save_to_jpg(int width, int height, unsigned int* pixels)
 {
-    char buffer[SENSITIVITY_LENGTH];
-    for (int i = SENSITIVITY_LENGTH - 1; i >= 0; i--)
-    {
-        buffer[i] = (sensitivity >> i * SENSITIVITY_LENGTH) & 0xFF;
-    }
+	time_t rawtime;
+	struct tm* timeinfo;
+	char name[21]; // YYYY-MM-DD--HH-MM-SS + null-character
 
-    int sending = send(socketID, buffer, SENSITIVITY_LENGTH, 0);
-    if (sending < 0)
-    {
-        return false;
-    }
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
 
-    return true;
-}
-
-bool try_receive_notification(int socketID)
-{
-	int bytesReceived = 0;
-	ServerNotification notification;
-
-	int statusSize = sizeof(notification.status);
-	char statusByte;
-	bytesReceived = recv(socketID, &statusByte, statusSize, 0);
-	
-	if (bytesReceived < statusSize)
+	if (strftime(name, 21, "%F--%H-%M-%S", timeinfo) == 0)
 	{
-		std::cerr << "Failed to receive status." << std::endl;
+		std::cerr << "Failed to create time string." << std::endl;
 		return false;
 	}
 	
-	notification.status = (Status)statusByte;
-	
-	if (notification.status == Status::STILL_IMAGE)
-	{
-		std::cout << "Warning: status received is STILL_IMAGE." << std::endl;
-	}
+	char destination[31];
+	strcpy(destination, "../images/");
+	const char* filename = strcat(destination, name);
 
-	int dimensionSize = sizeof(notification.width);
-
-	if (dimensionSize != sizeof(notification.height))
+	if (stbi_write_jpg(filename, width, height, 4, pixels, 50) == 0)
 	{
-		std::cout << "Warning: size of width and height do not match." << std::endl;
-	}
-	
-	char dimensionBuffer[dimensionSize];
-	bytesReceived = recv(socketID, &dimensionBuffer, dimensionSize, 0);
-
-	if (bytesReceived < dimensionSize)
-	{
-		std::cerr << "Failed to receive width." << std::endl;
+		std::cerr << "Failed to save jpg file." << std::endl;
 		return false;
 	}
-
-	int width;
-	// TODO: assign width
-
-	bytesReceived = recv(socketID, &dimensionBuffer, dimensionSize, 0);
-	if (bytesReceived < dimensionSize)
-	{
-		std::cerr << "Failed to receive height." << std::endl;
-		return false;
-	}
-
-	int height;
-	// TODO: assign height
-
-	int imageSize = width * height * sizeof(uint32_t);
-	char* imageBuffer = new char[imageSize];
-	bytesReceived = recv(socketID, imageBuffer, imageSize, 0);
-
-	if (bytesReceived < imageSize)
-	{
-		std::cerr << "Failed to receive image." << std::endl;
-		return false;
-	}
-
-	notification.image = imageBuffer;
 
 	return true;
-}
-
-void save_to_png(uint32_t width, uint32_t height, char* bytes)
-{
-
 }
 
 int main(int argc, char** args)
@@ -125,22 +67,31 @@ int main(int argc, char** args)
     }
 
     uint64_t sensitivity = atoi(args[3]);
-    if (!try_send_sensitivity(socketID, sensitivity))
+    if (send(socketID, &sensitivity, sizeof(sensitivity), 0) < 0)
     {
         std::cerr << "Failed to send sensitivity threshold." << std::endl;
         return (int)Error::SEND;
     }
+
+    ServerNotification notification;
     
     while (true)
     {
-        if (!try_receive_notification(socketID))
+        if (recv(socketID, &notification, sizeof(notification), 0) != sizeof(ServerNotification))
         {
-        	std::cerr << "An error occured while receiving data." << std::endl;
+        	std::cerr << "Failed to receive notification." << std::endl;
         	return (int)Error::RECEIVE;
         }
+
+        save_to_jpg(notification.width, notification.height, notification.image);
     }
 
-    close(socketID);
+    int closing = close(socketID);
+    if (closing < 0)
+    {
+    	std::cerr << "Failed to close socket." << std::endl;
+    	return (int)Error::CLOSE;
+    }
 
     return 0;
 }
