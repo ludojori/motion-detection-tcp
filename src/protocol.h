@@ -28,4 +28,4 @@ struct ServerNotification
 	unsigned int* image;
 };
 
-#endif
+#endif /* PROTOCOL_H */
