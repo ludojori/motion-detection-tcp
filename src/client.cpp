@@ -4,8 +4,6 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <time.h>
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 #include "protocol.h"
 
@@ -24,11 +22,12 @@ bool save_to_jpg(int width, int height, unsigned int* pixels)
 		return false;
 	}
 	
-	char destination[31];
+	char destination[35];
 	strcpy(destination, "../images/");
-	const char* filename = strcat(destination, name);
+	strcat(destination, name);
+	strcat(destination, ".jpg");
 
-	if (stbi_write_jpg(filename, width, height, 4, pixels, 50) == 0)
+	if (stbi_write_jpg(destination, width, height, 4, pixels, 50) == 0)
 	{
 		std::cerr << "Failed to save jpg file." << std::endl;
 		return false;
@@ -48,7 +47,7 @@ int main(int argc, char** args)
     hostent* host = gethostbyname(args[1]);
 
     int socketID = socket(AF_INET, SOCK_STREAM, 0);
-    if (socketID < 0)
+    if (socketID == -1)
     {
         std::cerr << "Failed to create socket." << std::endl;
         return (int)Error::SOCKET;
@@ -63,13 +62,15 @@ int main(int argc, char** args)
     if (connection < 0)
     {
         std::cerr << "Failed to connect to server." << std::endl;
+        close(socketID);
         return (int)Error::CONNECTION;
     }
 
     uint64_t sensitivity = atoi(args[3]);
-    if (send(socketID, &sensitivity, sizeof(sensitivity), 0) < 0)
+    if (send(socketID, &sensitivity, sizeof(sensitivity), 0) == -1)
     {
         std::cerr << "Failed to send sensitivity threshold." << std::endl;
+        close(socketID);
         return (int)Error::SEND;
     }
 
@@ -80,14 +81,15 @@ int main(int argc, char** args)
         if (recv(socketID, &notification, sizeof(notification), 0) != sizeof(ServerNotification))
         {
         	std::cerr << "Failed to receive notification." << std::endl;
+        	close(socketID);
         	return (int)Error::RECEIVE;
         }
 
         save_to_jpg(notification.width, notification.height, notification.image);
     }
 
-    int closing = close(socketID);
-    if (closing < 0)
+	// Currently unreachable (requires input):
+    if (close(socketID) == -1)
     {
     	std::cerr << "Failed to close socket." << std::endl;
     	return (int)Error::CLOSE;
