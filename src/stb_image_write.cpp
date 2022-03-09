@@ -1,5 +1,5 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include "../libs/third-party/stb-image-write/stb_image_write.h"
 
 #ifdef STB_IMAGE_WRITE_IMPLEMENTATION
 

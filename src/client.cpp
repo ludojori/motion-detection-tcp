@@ -4,8 +4,10 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <time.h>
-#include "stb_image_write.h"
-#include "protocol.h"
+#include "../libs/third-party/stb-image-write/stb_image_write.h"
+#include "../libs/motion-detection/tcp_protocol.h"
+
+using namespace motion_detection;
 
 bool save_to_jpg(int width, int height, unsigned int* pixels)
 {
@@ -22,10 +24,10 @@ bool save_to_jpg(int width, int height, unsigned int* pixels)
 		return false;
 	}
 	
-	char destination[35];
-	strcpy(destination, "../images/");
+	char destination[35]; // 21 + 10 + 4
+	strcpy(destination, "../images/"); // 10 characters + null-character
 	strcat(destination, name);
-	strcat(destination, ".jpg");
+	strcat(destination, ".jpg"); // 4 characters + null-character
 
 	if (stbi_write_jpg(destination, width, height, 4, pixels, 50) == 0)
 	{
@@ -58,8 +60,7 @@ int main(int argc, char** args)
     serverAddress.sin_port = htons((u_short)strtoul(args[2], NULL, 0));
     memcpy(&serverAddress.sin_addr.s_addr, host->h_addr, host->h_length);
 
-    int connection = connect(socketID, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
-    if (connection < 0)
+    if (connect(socketID, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
     {
         std::cerr << "Failed to connect to server." << std::endl;
         close(socketID);
@@ -74,26 +75,39 @@ int main(int argc, char** args)
         return (int)Error::SEND;
     }
 
-    ServerNotification notification;
+    struct Packet packet;
+    unsigned int* imageBuffer;
     
     while (true)
     {
-        if (recv(socketID, &notification, sizeof(notification), 0) != sizeof(ServerNotification))
+        if (recv(socketID, &packet, sizeof(packet), 0) != sizeof(Packet))
         {
-        	std::cerr << "Failed to receive notification." << std::endl;
+        	std::cerr << "Failed to receive packet." << std::endl;
         	close(socketID);
         	return (int)Error::RECEIVE;
         }
 
-        save_to_jpg(notification.width, notification.height, notification.image);
+		int imageBufferSize = packet.width * packet.height;
+        imageBuffer = new unsigned int[imageBufferSize];
+
+        if (recv(socketID, imageBuffer, imageBufferSize, 0) != imageBufferSize)
+        {
+        	std::cerr << "Failed to receive image." << std::endl;
+        	close(socketID);
+        	return (int)Error::RECEIVE;
+        }
+        
+        save_to_jpg(packet.width, packet.height, imageBuffer);
+        delete[] imageBuffer;
     }
 
-	// Currently unreachable (requires input):
+	/** Currently unreachable (requires input):
     if (close(socketID) == -1)
     {
     	std::cerr << "Failed to close socket." << std::endl;
     	return (int)Error::CLOSE;
     }
+    */
 
     return 0;
 }
