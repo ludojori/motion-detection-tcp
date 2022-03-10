@@ -9,6 +9,15 @@
 
 using namespace motion_detection;
 
+unsigned int* little_to_big_endian(unsigned int* data, const int& size)
+{
+	for (int i = 0; i < size; i++)
+	{
+		data[i] = __builtin_bswap32(data[i]);
+	}
+	return data;
+}
+
 bool save_to_jpg(int width, int height, unsigned int* pixels)
 {
 	time_t rawtime;
@@ -96,7 +105,8 @@ int main(int argc, char** args)
         	close(socketID);
         	return (int)Error::RECEIVE;
         }
-        
+
+        imageBuffer = little_to_big_endian(imageBuffer, imageBufferSize);
         save_to_jpg(packet.width, packet.height, imageBuffer);
         delete[] imageBuffer;
     }
