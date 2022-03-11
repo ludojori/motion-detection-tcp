@@ -51,9 +51,17 @@ void read_sensitivity(int sockID)
 		getResolution(&height, &width);
 		struct Packet packet(Status::MOTION_DETECTED, height, width);
 		send(sockID, &packet, sizeof(packet), 0);
-		int sizeOfPicture = height * width;
-        std::cout << "Image buffer size: " << sizeOfPicture << std::endl;
-		send(sockID, pixels, sizeOfPicture, 0);
+		int sizeOfPictureInBytes = height * width * sizeof(unsigned int);
+		int numberOfPackages = sizeOfPictureInBytes/SIZE_OF_BYTES_PACKAGE;
+        std::cout << "Image buffer size in bytes: " << sizeOfPictureInBytes << std::endl;
+		for(int i = 0; i < numberOfPackages; i++)
+		{
+			std :: cout << "Sent pixels: " << i * send(sockID, pixels, SIZE_OF_BYTES_PACKAGE, 0) << std::endl;	
+			pixels += SIZE_OF_BYTES_PACKAGE / sizeof(unsigned int);
+		}
+		int lastPackageSize = sizeOfPictureInBytes % SIZE_OF_BYTES_PACKAGE; 
+		std :: cout << "Sent last pixels: " << send(sockID, pixels, lastPackageSize, 0) << std::endl;	
+
 } 
 
 unsigned char* convertPixelsToBytes(unsigned int* pixels)
@@ -62,14 +70,30 @@ unsigned char* convertPixelsToBytes(unsigned int* pixels)
 	getResolution(&height, &width);
 	int pixelsCount = height * width;
 	
-	unsigned char* charPixels = new unsigned 	char[pixelsCount * 4];
+	unsigned char* charPixels = new unsigned char[pixelsCount * 4];
 	charPixels = (unsigned char *) pixels;	
 	return charPixels;
+}
+
+uint64_t getAveragePixels(unsigned char* bytePixels, size_t arraySizeInBytes)
+{
+	int sum = 0;
+	uint64_t av;
+	for (size_t i = 0; i < arraySizeInBytes; i++)
+	{
+		if(i % 3 == 0) //alpha values
+		{
+			continue;
+		}
+		sum += bytePixels[i];
+	}
+	av = sum / (arraySizeInBytes / 4); 
 }
 
 uint64_t calculatePictureDifference(unsigned char* bytePixels)
 {
 	//TODO
+	//shoould store old pic average value
 	return 120;		
 }
 
@@ -106,7 +130,12 @@ void changePic()
 	
 	unsigned int* pixels = new unsigned int[pixelsCount];
 
-	getCurrentImage(pixels);	
+	for (size_t i = 0; i < pixelsCount; i++)
+	{
+		pixels[i] = 0;
+	}
+	
+	//getCurrentImage(pixels);	
 	checkClients(pixels);
 }
 

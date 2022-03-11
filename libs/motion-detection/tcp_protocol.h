@@ -1,6 +1,8 @@
 #ifndef TCP_PROTOCOL_H
 #define TCP_PROTOCOL_H
 
+#define SIZE_OF_BYTES_PACKAGE 10000 //trqbva da se deli na 4
+
 namespace motion_detection
 {
 	enum class Error : int
@@ -24,6 +26,9 @@ namespace motion_detection
 
 	struct Packet
 	{
+		Packet(Status status, int width, int height)
+			:status(status), width(width), height(height) {}
+		Packet() = default;
 		Status status;
 		int width;
 		int height;

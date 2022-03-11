@@ -85,6 +85,7 @@ int main(int argc, char** args)
     }
 
     struct Packet packet;
+    unsigned int* fullImage;
     unsigned int* imageBuffer;
     
     while (true)
@@ -96,18 +97,43 @@ int main(int argc, char** args)
         	return (int)Error::RECEIVE;
         }
 
-		int imageBufferSize = packet.width * packet.height;
-        imageBuffer = new unsigned int[imageBufferSize];
-        std::cout << "Image buffer size: " << imageBufferSize << std::endl;
+		int pixelsCount = packet.width * packet.height;
+        fullImage = new unsigned int[pixelsCount];
+        std::cout << "Image buffer size: " << pixelsCount << std::endl;
 
-        if (recv(socketID, imageBuffer, imageBufferSize, 0) != imageBufferSize)
-        {
-        	std::cerr << "Failed to receive image." << std::endl;
-        	close(socketID);
-        	return (int)Error::RECEIVE;
-        }
+    	int numberOfPackages = pixelsCount * sizeof(unsigned int) /SIZE_OF_BYTES_PACKAGE;
+        int recievedBytes; 
+        int index = 0;
 
-        imageBuffer = little_to_big_endian(imageBuffer, imageBufferSize);
+        imageBuffer = new unsigned int[SIZE_OF_BYTES_PACKAGE / sizeof(unsigned int)];
+        for(int i = 0; i < numberOfPackages; i++)
+		{
+            if ((recievedBytes = recv(socketID, imageBuffer, SIZE_OF_BYTES_PACKAGE, 0)) != SIZE_OF_BYTES_PACKAGE)
+            {
+                std::cout << "Bytes recieved: " << i * recievedBytes << std::endl;
+                std::cerr << "Failed to receive image." << std::endl;
+                close(socketID);
+                return (int)Error::RECEIVE;
+            }
+            std::cout << "Bytes recieved: " << i * recievedBytes << std::endl;
+            memcpy(fullImage + index, imageBuffer, SIZE_OF_BYTES_PACKAGE);
+            std::cout << "Bytes copied" << std::endl;
+            index += SIZE_OF_BYTES_PACKAGE / sizeof(unsigned int); 
+		}
+        delete[] imageBuffer;
+
+		int lastPackageSize = pixelsCount % SIZE_OF_BYTES_PACKAGE; 
+        imageBuffer = new unsigned int[lastPackageSize];
+		if ((recievedBytes = recv(socketID, imageBuffer, lastPackageSize, 0)) != lastPackageSize)
+            {
+                std::cout << "Bytes recieved: " << recievedBytes << std::endl;
+                std::cerr << "Failed to receive image." << std::endl;
+                close(socketID);
+                return (int)Error::RECEIVE;
+            }
+        memcpy(fullImage + index, imageBuffer, lastPackageSize);
+
+        imageBuffer = little_to_big_endian(imageBuffer, pixelsCount);
         save_to_jpg(packet.width, packet.height, imageBuffer);
         delete[] imageBuffer;
     }
