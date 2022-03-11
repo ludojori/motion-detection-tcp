@@ -1,8 +1,11 @@
-#include "protocol.h"
-#include "common.h"
-#include "../camera/camera.h"
+#include "../libs/motion-detection/tcp_protocol.h"
+#include "../libs/third-party/camera/camera.h"
+
+#include <iostream>	
 
 #include <thread>
+#include <mutex>
+
 #include <vector> 
 #include <queue> 
 #include <unordered_map> 
@@ -10,67 +13,47 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
+using namespace motion_detection;
+
 const int MAX_CLIENTS = 10; 
-std::unordered_map<int, int> sockIDSensitivity;
+std::unordered_map<int, uint64_t> sockIDSensitivity;
 
+std::mutex mutex;
 
-
-/* https://www.delftstack.com/howto/cpp/how-to-determine-if-a-string-is-number-cpp/#use-std-isdigit-method-to-determine-if-a-string-is-a-number */
-bool isNumber(const char* str)
+void registerClient(int sockID, uint64_t sensitivity)
 {
-	int length = strlen(str);
-    for (int i = 0; i < length; i++) 
-	{
-        if (std::isdigit(str[i]) == 0) return false;
-    }
-    return true;
+	mutex.lock();
+	std::cout << "Locked";
+	sockIDSensitivity.insert({sockID, sensitivity});
+	mutex.unlock();
+	std::cout << "Unlocked";
+
 }
 
 void read_sensitivity(int sockID)
 {
 	uint64_t sens;
+	const int SENSITIVITY_LENGTH = sizeof(uint64_t);
 	int r_size = recv(sockID, &sens, SENSITIVITY_LENGTH, 0);
 	if(r_size < SENSITIVITY_LENGTH) {
 		return;
 	}
-	sockIDSensitivity.insert({sockID, sens});
+	std::cout << "Before register: sens = " << sens << std::endl;
+	registerClient(sockID, sens);
+	mutex.lock();
+	std::cout << "Sensitivity: " << sens << " from map: " << sockIDSensitivity.at(sockID) << std::endl;
+	mutex.unlock();
 }
-
-/* void read_file(int sockID)
-{
-	int len = 0;
-	int r_size = recv(sockID, &len, sizeof(len), 0);
-	if(r_size < sizeof(len)) {
-		return;
-	}
-
-	char *filename = new char[len];
-
-	recv(sockID, filename, len, 0);
-
-	std::ofstream file(filename, std::ios::binary);
-
-	int file_length = 0;
-	recv(sockID, &file_length, sizeof(file_length), 0);
-
-	uint8_t *content = new uint8_t[file_length];
-	recv(sockID, content, file_length, 0);
-
-	file.write((const char*)content, file_length);
-
-	std::cout << "File received: " << filename << std::endl;
-
-	delete [] filename;
-	delete [] content;
-}
- */
 
  void sendPicture(int sockID, unsigned int* pixels)
 {
-		int height, width;
+	    int height, width;
 		getResolution(&height, &width);
-		int pixelsCount = height * width;
-		send(sockID, pixels, pixelsCount * sizeof(unsigned int), 0);
+		struct Packet packet(Status::MOTION_DETECTED, height, width);
+		send(sockID, &packet, sizeof(packet), 0);
+		int sizeOfPicture = height * width;
+        std::cout << "Image buffer size: " << sizeOfPicture << std::endl;
+		send(sockID, pixels, sizeOfPicture, 0);
 } 
 
 unsigned char* convertPixelsToBytes(unsigned int* pixels)
@@ -86,40 +69,59 @@ unsigned char* convertPixelsToBytes(unsigned int* pixels)
 
 uint64_t calculatePictureDifference(unsigned char* bytePixels)
 {
-	return 0;		
+	//TODO
+	return 120;		
 }
 
 void checkClients(unsigned int* pixels)
 {
 	uint64_t diff = calculatePictureDifference(convertPixelsToBytes(pixels));
+
 	//check all clients if they should be notified
-	for (auto& i : sockIDSensitivity	)
+	mutex.lock();
+	for (auto& i : sockIDSensitivity)
 	{
 		if(i.second >= diff)
 		{
 			sendPicture(i.first, pixels);
 		}
 	}
+	mutex.unlock();
+	std::cout << "Clients checked" << std::endl;
 }
 
 void disconnectClient(int sockID, int& clientsCount)
 {
+	//TODO
 	clientsCount--; 
 }
 
+void changePic()
+{
+	generateMovement();
+	std::cout << "Picture changed!" << std::endl;
+	int height, width;
+	getResolution(&height, &width);
+	int pixelsCount = height * width;
+	
+	unsigned int* pixels = new unsigned int[pixelsCount];
+
+	getCurrentImage(pixels);	
+	checkClients(pixels);
+}
 
 int main(int argc, char** args)
 {
 	int clientsCount = 0;
     int sockID = 0;
-	
+
         socklen_t addr_size;
 
         int listener = socket(PF_INET, SOCK_STREAM, 0);
 
         sockaddr_in serverAddr;
         serverAddr.sin_family = AF_INET;
-        serverAddr.sin_port = htons(5588);
+        serverAddr.sin_port = htons((u_short)strtoul(args[1], NULL, 0));
         serverAddr.sin_addr.s_addr = INADDR_ANY;
 
         bind(listener, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
@@ -130,16 +132,21 @@ int main(int argc, char** args)
         }
 		
 		std::vector<std::thread> threads;
-		while(clientsCount < MAX_CLIENTS)
+		while(true)
 		{
+			if(clientsCount >= MAX_CLIENTS)
+			{
+				continue;
+				//wait until disconnect
+			}
 			std::cout << "Listining" << std::endl;
 			sockaddr_in cliAddr;
 			socklen_t len = sizeof(cliAddr);
 			sockID = accept(listener, (struct sockaddr *) &cliAddr, &len);
 			std::cout << "Connection accepted. SockID: " << sockID << std::endl;
-			// read_sensitivity(sockID);
 			threads.emplace_back(read_sensitivity, sockID);
 			clientsCount++; 
 			std::cout << "Number of connections accepted " << threads.size() << std::endl;
+			changePic();
 		}
 }
