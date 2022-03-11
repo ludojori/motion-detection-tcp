@@ -1,5 +1,6 @@
 #include "../libs/motion-detection/tcp_protocol.h"
 #include "../libs/third-party/camera/camera.h"
+#include "adafruit/bbio.h"	
 
 #include <iostream>	
 
@@ -14,6 +15,8 @@
 #include <netinet/in.h>
 
 using namespace motion_detection;
+
+using namespace adafruit::bbio;
 
 const int MAX_CLIENTS = 10; 
 std::unordered_map<int, uint64_t> sockIDSensitivity;
@@ -43,6 +46,7 @@ void read_sensitivity(int sockID)
 	mutex.lock();
 	std::cout << "Sensitivity: " << sens << " from map: " << sockIDSensitivity.at(sockID) << std::endl;
 	mutex.unlock();
+	//TODO: Check if picture is changed
 }
 
  void sendPicture(int sockID, unsigned int* pixels)
@@ -88,6 +92,7 @@ uint64_t getAveragePixels(unsigned char* bytePixels, size_t arraySizeInBytes)
 		sum += bytePixels[i];
 	}
 	av = sum / (arraySizeInBytes / 4); 
+	return av;
 }
 
 uint64_t calculatePictureDifference(unsigned char* bytePixels)
@@ -122,6 +127,20 @@ void disconnectClient(int sockID, int& clientsCount)
 
 void changePic()
 {
+	init(lib_options(LOG_DEBUG, nullptr, LOG_PERROR));
+	Gpio gpio("P8_43", Gpio::Direction::Input);
+    Gpio::Value position;
+
+	while (true)
+	{
+		position = gpio.get_position();
+		if (position == Gpio::Value::Low)
+		{
+			std::cout << "Pressed button" << std::endl;
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+		}
+	}
+
 	generateMovement();
 	std::cout << "Picture changed!" << std::endl;
 	int height, width;
@@ -137,6 +156,7 @@ void changePic()
 	
 	//getCurrentImage(pixels);	
 	checkClients(pixels);
+	delete[] pixels;
 }
 
 int main(int argc, char** args)
@@ -161,6 +181,7 @@ int main(int argc, char** args)
         }
 		
 		std::vector<std::thread> threads;
+		std::thread t1(changePic);
 		while(true)
 		{
 			if(clientsCount >= MAX_CLIENTS)
@@ -176,6 +197,6 @@ int main(int argc, char** args)
 			threads.emplace_back(read_sensitivity, sockID);
 			clientsCount++; 
 			std::cout << "Number of connections accepted " << threads.size() << std::endl;
-			changePic();
 		}
+		t1.join();
 }

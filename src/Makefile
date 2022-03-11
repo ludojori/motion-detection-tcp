@@ -8,16 +8,16 @@ executables = server_exe client_exe
 all: server client
 
 server: server.cpp ../libs/third-party/camera/camera_arm32.o
-	g++ ../libs/third-party/camera/camera_arm32.o server.cpp -o server -lpthread	
+	g++ ../libs/third-party/camera/camera_arm32.o server.cpp -o server -lpthread -Wl,/usr/local/lib/libadafruit-bbio1.so
 
-server.o: server.cpp
-	g++ -c server.cpp -o server.o
+# server.o: server.cpp
+# 	g++ -c server.cpp -o server.o
 
 client: client.cpp
 	g++ client.cpp stb_image_write.cpp -o client
 
-client.o: client.cpp
-	g++ -c client.cpp -o client.o
+# client.o: client.cpp
+# 	g++ -c client.cpp -o client.o
 
 stb_image_write.o: stb_image_write.cpp
 	g++ -c stb_image_write.cpp -o ${stb_lib}stb_image_write.o

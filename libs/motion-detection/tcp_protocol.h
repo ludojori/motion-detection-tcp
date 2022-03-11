@@ -1,7 +1,7 @@
 #ifndef TCP_PROTOCOL_H
 #define TCP_PROTOCOL_H
 
-#define SIZE_OF_BYTES_PACKAGE 10000 //trqbva da se deli na 4
+#define SIZE_OF_BYTES_PACKAGE 10000 //should be divisible by 4
 
 namespace motion_detection
 {
