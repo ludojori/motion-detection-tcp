@@ -90,13 +90,12 @@ bool isSocketConnected(int sockID)
 	return true;
 }
 
-void sendPicture(int sockID, unsigned int *pixels)
+void sendPicture(int sockID, unsigned int *fullImage)
 {
 	int height, width;
-	getResolution(&height, &width);
+	getResolution(&width, &height);
 	int sizeOfPicture = height * width;
 
-	unsigned int *fullImage = new unsigned int[sizeOfPicture]{0}; // in 4-byte pixels
 	unsigned int *imageSegment = new unsigned int[IMAGE_SEGMENT_SIZE]{0};
 	int segmentCount = sizeOfPicture / IMAGE_SEGMENT_SIZE;
 	std::cout << "Image segment count: " << segmentCount << std::endl;
@@ -167,8 +166,6 @@ void sendPicture(int sockID, unsigned int *pixels)
 			std::cout << "[WARNING]: Remaining segment not fully sent." << std::endl;
 		}
 	}
-
-	delete[] fullImage;
 	delete[] imageSegment;
 }
 
