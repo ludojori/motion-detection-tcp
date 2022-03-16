@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "algorithm": "cpp",
+        "chrono": "cpp",
+        "xhash": "cpp",
+        "xutility": "cpp"
+    }
+}
