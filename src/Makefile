@@ -1,28 +1,23 @@
-stb_lib = ../libs/third-party/stb-image-write/
-camera_lib = ..libs/third-party/camera/
-objects = server.o client.o ${stb_lib}stb_image_write.o
-server_exe = ../bin/server
-client_exe = ../bin/client
-executables = server_exe client_exe
+camera_dir = ../libs/third-party/camera/
+stb_dir = ../libs/third-party/stb-image-write/
+objects = client_libraries.o filename_builder.o ${stb_dir}stb_image_write.o
 
-all: server client
+all: client_libraries filename_builder gpio_input server client
 
 server: server.o
-	g++ server.o ${camera_lib}camera_arm32.o -o ${server_exe}
-	rm -f server.o
+	g++ server.o ${camera_dir}camera_arm32.o -o server
 
 server.o: server.cpp
 	g++ -c server.cpp -o server.o
 
 client: client.o stb_image_write.o
-	g++ client.o ${stb_lib}stb_image_write.o -o ${client_exe}
-	rm -f client.o ${stb_lib}stb_image_write.o
+	g++ client.o ${stb_dir}stb_image_write.o -o client
 
 client.o: client.cpp
 	g++ -c client.cpp -o client.o
 
 stb_image_write.o: stb_image_write.cpp
-	g++ -c stb_image_write.cpp -o ${stb_lib}stb_image_write.o
+	g++ -c ../src/stb_image_write.cpp -o ${stb_dir}stb_image_write.o
 
 clean:
-	rm -f ${objects} ${executables}
+	rm -f ${objects} client_libraries filename_builder gpio_input
