@@ -10,14 +10,18 @@ server: server.o
 server.o: server.cpp
 	g++ -c server.cpp -o server.o
 
-client: client.o stb_image_write.o
-	g++ client.o ${stb_dir}stb_image_write.o -o client
+client: client.o tcp-client-image-receiver.o ${stb_dir}stb_image_write.o
+	g++ client.o tcp-client-image-receiver.o ${stb_dir}stb_image_write.o -o client
 
 client.o: client.cpp
 	g++ -c client.cpp -o client.o
 
+tcp-client-image-receiver.o: tcp-client-image-receiver.cpp
+	g++ -c tcp-client-image-receiver.cpp -o tcp-client-image-receiver.o
+
 stb_image_write.o: stb_image_write.cpp
-	g++ -c ../src/stb_image_write.cpp -o ${stb_dir}stb_image_write.o
+	g++ -c stb_image_write.cpp -o ${stb_dir}stb_image_write.o
+
 
 clean:
 	rm -f ${objects} client_libraries filename_builder gpio_input
