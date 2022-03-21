@@ -5,10 +5,12 @@ server_exe = ../bin/server
 client_exe = ../bin/client
 executables = server_exe client_exe
 
+
 all: server client
 
-server: server.cpp ../libs/third-party/camera/camera_arm32.o
-	g++ ../libs/third-party/camera/camera_arm32.o server.cpp -o server -lpthread -Wl,/usr/local/lib/libadafruit-bbio1.so
+server: server.cpp ${camera_lib}camera_arm32.o
+	g++ ${camera_lib}camera_arm32.o server.cpp communication/server_communication.cpp communication/image_processor.cpp -o server -lpthread -Wl,/usr/local/lib/libadafruit-bbio1.so
+	
 
 # server.o: server.cpp
 # 	g++ -c server.cpp -o server.o
