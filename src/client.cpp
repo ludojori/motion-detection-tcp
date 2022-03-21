@@ -15,6 +15,7 @@ int main(int argc, char** args)
         std::cerr << "[ERROR]: Invalid parameters. Parameters are: [server_addr] [port] [sens_threshold]. Exiting." << std::endl;
         return -1;
     }
+    errno = 0;
 
     hostent* host = gethostbyname(args[1]);
 
@@ -26,6 +27,7 @@ int main(int argc, char** args)
         std::cerr << "[ERROR]: Function socket() failed with error code: " << std::strerror(errno) << std::endl;
         return (int)errno;
     }
+    errno = 0;
 
     std::cout << "[MESSAGE]: Assigning server address..." << std::endl;
 
@@ -42,6 +44,7 @@ int main(int argc, char** args)
         close(client_socket);
         return (int)errno;
     }
+    errno = 0;
 
     std::cout << "[MESSAGE]: Connection accepted." << std::endl;
     
@@ -57,9 +60,14 @@ int main(int argc, char** args)
     {
     	std::cout << "[WARNING]: Partially sent sensitivity threshold." << std::endl;
     }
+    errno = 0;
     
-    TcpClientImageReceiver imageReceiver;
-    imageReceiver.receive_and_save(client_socket, "../images/");
+    int receiver_error_status = TcpClientImageReceiver::receive_and_save(client_socket, "../images/");
+    if (receiver_error_status != 0)
+    {
+    	return receiver_error_status;
+    }
+    errno = 0;
 
 	if (close(client_socket) == -1)
 	{

@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <time.h>
 #include "../libs/third-party/stb-image-write/stb_image_write.h"
-#include "tcp-protocol.h"
+#include "image-utils.h"
 #ifdef DEBUG
 #define DEBUG_PRINT(type, msg)							\
 	if (type == "m")		std::cout << "[MESSAGE]: ";	\
@@ -18,118 +18,146 @@
 
 namespace motion_detection
 {
-	TcpClientImageReceiver::TcpClientImageReceiver() : socketID(0), save_directory(NULL)
+	int TcpClientImageReceiver::receive_and_save(int socketfd, const char* dir)
 	{
-	}
-
-	TcpClientImageReceiver::~TcpClientImageReceiver()
-	{
-	}
-
-	int TcpClientImageReceiver::receive_and_save(int socketID, const char* save_directory)
-	{
-		this->socketID = socketID;
-		this->save_directory = (char*)save_directory;
-
-		char statusByte = ' ';
+		char status_byte = ' ';
 		while (true)
 		{
 			// Receive status byte
 
-			if (recv(socketID, &statusByte, 1, 0) == -1)
+			if (recv(socketfd, &status_byte, 1, 0) == -1)
 			{
 				std::cerr << "[ERROR]: Receiving status byte failed: " << std::strerror(errno) << std::endl;
-				close(socketID);
 				return (int)errno;
 			}
 
-			if (statusByte == (char)Status::STILL_IMAGE)
+			if (status_byte == (char)Status::STILL_IMAGE)
 			{
 				std::cout << "[MESSAGE]: Received status byte STILL_IMAGE." << std::endl;
 			}
-			else if (statusByte == (char)Status::MOTION_DETECTED)
+			else if (status_byte == (char)Status::MOTION_DETECTED)
 			{
 				std::cout << "[MESSAGE]: Received status byte MOTION_DETECTED." << std::endl;
 				std::cout << "[MESSAGE]: Attempting to receive config packet..." << std::endl;
 
 				// Receive ConfigPacket
 
-				struct ConfigPacket packet;
-				int packet_bytes = recv(socketID, &packet, sizeof(packet), 0);
-
-				if (packet_bytes == -1)
+				ConfigPacket packet;
+				int config_packet_error_status = receive_config_packet(socketfd, &packet);
+				if (config_packet_error_status != 0)
 				{
-					std::cerr << "[ERROR]: Receiving ConfigPacket failed: " << std::strerror(errno) << std::endl;
-					close(socketID);
-					return (int)errno;
-				}
-				else if (packet_bytes != sizeof(ConfigPacket))
-				{
-					std::cout << "[WARNING]: ConfigPacket not fully received." << std::endl;
+					return config_packet_error_status;
 				}
 
-				// Receive segments
+				std::cout << "[MESSAGE]: Declaring local variables..." << std::endl;
+				int full_image_buffer_size = packet.fullImageWidth * packet.fullImageHeight;
+				unsigned int* full_image_buffer = new unsigned int[full_image_buffer_size] { 0 };
+				
+				int segment_count = full_image_buffer_size / IMAGE_SEGMENT_SIZE;
+				int remaining_buffer_size = full_image_buffer_size % IMAGE_SEGMENT_SIZE;
+				if (remaining_buffer_size != 0)
+				{
+					segment_count += 1;
+				}
 
-				std::cout << "[MESSAGE]: Config packet received." << std::endl;
-				std::cout << "[MESSAGE]: Parameters are: width = " << packet.fullImageWidth
-					<< " height = " << packet.fullImageHeight
-					<< " segment_count = " << packet.imageSegmentCount << std::endl;
-
-				std::cout << "[MESSAGE]: Declaring variables..." << std::endl;
-				int fullImageBufferSize = packet.fullImageWidth * packet.fullImageHeight;
-				unsigned int* fullImageBuffer = new unsigned int[fullImageBufferSize] { 0 };
-				int imageSegmentBufferSize = fullImageBufferSize / packet.imageSegmentCount;
-				unsigned int* imageSegmentBuffer = new unsigned int[imageSegmentBufferSize] { 0 };
-
+				unsigned int** segments = new unsigned int*[segment_count];
+				for (int i = 0; i < segment_count; i++)
+				{
+					segments[i] = new unsigned int[IMAGE_SEGMENT_SIZE] { 0 };
+				}
+				
 				std::cout << "[MESSAGE]: Receiving image segments..." << std::endl;
 
-				int segmentBufferBytes = imageSegmentBufferSize * sizeof(unsigned int);
+				// Receive segments
+				
+				receive_segments(socketfd, segments, segment_count, remaining_buffer_size);
 
-				int index = 0;
-				int receiving = 0;
-				for (int i = 0; i < packet.imageSegmentCount; i++)
-				{
-					receiving = recv(socketID, imageSegmentBuffer, segmentBufferBytes, 0);
-					if (receiving == -1)
-					{
-						std::cerr << "[ERROR]: Function recv() failed with error code: " << std::strerror(errno) << std::endl;
-						return (int)errno;
-					}
-					else if (receiving != segmentBufferBytes)
-					{
-						std::cout << "[WARNING]: Segment package No." << i << " not fully received." << std::endl;
-					}
-					memcpy(fullImageBuffer + index, imageSegmentBuffer, segmentBufferBytes);
-					index += imageSegmentBufferSize;
-				}
-
-				// Receive remaining bytes
-
-				int remainingBytes = (fullImageBufferSize % imageSegmentBufferSize) * sizeof(unsigned int);
-				std::cout << "[MESSAGE]: Receiving remaining " << remainingBytes << " bytes..." << std::endl;
-
-				receiving = recv(socketID, imageSegmentBuffer, remainingBytes, 0);
-				if (receiving == -1)
-				{
-					std::cerr << "[ERROR]: Function recv() failed with error code: " << std::strerror(errno) << std::endl;
-					return (int)errno;
-				}
-				else if (receiving != remainingBytes)
-				{
-					std::cout << "[WARNING]: Remaining segment not fully received." << std::endl;
-				}
-				memcpy(fullImageBuffer + index, imageSegmentBuffer, remainingBytes);
+				// Construct image from segments
+				
+				ImageUtils::construct(segments, full_image_buffer_size, full_image_buffer);
 
 				std::cout << "[MESSAGE]: Fixing image endianess..." << std::endl;
-				little_to_big_endian(fullImageBuffer, fullImageBufferSize);
+				little_to_big_endian(full_image_buffer, full_image_buffer_size);
 
 				std::cout << "[MESSAGE]: Saving image..." << std::endl;
-				save_to_jpg(packet.fullImageWidth, packet.fullImageHeight, fullImageBuffer);
+				if (!try_save_to_jpg(dir, packet.fullImageWidth, packet.fullImageHeight, full_image_buffer))
+				{
+					return -1;
+				}
 
-				delete[] fullImageBuffer;
-				delete[] imageSegmentBuffer;
+				delete[] full_image_buffer;
+				for (int i = 0; i < segment_count; i++)
+				{
+					delete[] segments[i];
+				}
+				delete[] segments;
+			}
+
+			return 0;
+		}
+	}
+
+	int TcpClientImageReceiver::receive_config_packet(int socketfd, ConfigPacket* packet)
+	{
+			int packet_bytes = recv(socketfd, packet, sizeof(packet), 0);
+
+			if (packet_bytes == -1)
+			{
+				std::cerr << "[ERROR]: Receiving ConfigPacket failed: " << std::strerror(errno) << std::endl;
+				return (int)errno;
+			}
+			else if (packet_bytes != sizeof(ConfigPacket))
+			{
+				std::cout << "[WARNING]: ConfigPacket not fully received." << std::endl;
+			}
+						
+			std::cout << "[MESSAGE]: Config packet received." << std::endl;
+			std::cout << "[MESSAGE]: Parameters are: width = " << packet->fullImageWidth
+					<< " height = " << packet->fullImageHeight
+					<< " segment_count = " << packet->imageSegmentCount << std::endl;
+
+			return 0;
+	}
+
+	int TcpClientImageReceiver::receive_segments(int socketfd, unsigned int** segments, int segment_count, int remainder)
+	{
+		int end_idx = segment_count;
+		
+		if (remainder != 0)
+		{
+			end_idx -= 1;
+		}
+
+		int received_bytes = 0;
+		for (int i = 0; i < end_idx; i++)
+		{
+			received_bytes = recv(socketfd, segments[i], IMAGE_SEGMENT_SIZE, 0);
+			if (received_bytes == -1)
+			{
+				std::cerr << "[ERROR]: Receiving segment #" << i << "failed: " << std::strerror(errno) << std::endl;
+				return (int)errno;
+			}
+			else if (received_bytes != IMAGE_SEGMENT_SIZE)
+			{
+				std::cout << "[WARNING]: Segment #" << i << " not fully received." << std::endl;
 			}
 		}
+
+		if (remainder != 0)
+		{
+			received_bytes = recv(socketfd, segments[segment_count], remainder, 0);
+			if (received_bytes == -1)
+			{
+				std::cerr << "[ERROR]: Receiving remaining segment failed:" << std::strerror(errno) << std::endl;
+				return (int)errno;
+			}
+			else if (received_bytes != remainder)
+			{
+				std::cout << "[WARNING]: Remaining segment not fully received." << std::endl;
+			}
+		}
+	
+		return 0;
 	}
 
 	unsigned int* TcpClientImageReceiver::little_to_big_endian(unsigned int* data, const int& length)
@@ -141,7 +169,7 @@ namespace motion_detection
 		return data;
 	}
 
-	bool TcpClientImageReceiver::save_to_jpg(const int width, const int height, unsigned int* pixels)
+	bool TcpClientImageReceiver::try_save_to_jpg(const char* dir, const int width, const int height, unsigned int* pixels)
 	{
 		time_t rawtime;
 		struct tm* timeinfo;
@@ -156,8 +184,8 @@ namespace motion_detection
 			return false;
 		}
 
-		char destination[strlen(save_directory) + 21 + 4];
-		strcpy(destination, save_directory);
+		char destination[strlen(dir) + 21 + 4];
+		strcpy(destination, dir);
 		strcat(destination, name);
 		strcat(destination, ".jpg");
 
