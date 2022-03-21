@@ -128,7 +128,7 @@ int main(int argc, char** args)
 			// Receive ConfigPacket
 
 		    struct ConfigPacket packet;
-		    int es = recv(socketID, &packet, sizeof(packet), 0);
+		    int packet_bytes = recv(socketID, &packet, sizeof(packet), 0);
 
 			if (packet_bytes == -1)
 			{
