@@ -14,12 +14,12 @@ void ImageUtils::separate(unsigned int* image, int image_size, unsigned int** se
 	
 	for (int i = 0; i < end_idx; i++)
 	{
-		memcpy(segments[i], image + (i * IMAGE_SEGMENT_SIZE), IMAGE_SEGMENT_SIZE);
+		memcpy(segments[i], image + (i * IMAGE_SEGMENT_SIZE), IMAGE_SEGMENT_SIZE * sizeof(unsigned int));
 	}
 
 	if (remainder != 0)
 	{
-		memcpy(segments[end_idx], image + (end_idx * IMAGE_SEGMENT_SIZE), remainder);
+		memcpy(segments[end_idx], image + (end_idx * IMAGE_SEGMENT_SIZE), remainder * sizeof(unsigned int));
 	}
 }
 
@@ -36,11 +36,11 @@ void ImageUtils::construct(unsigned int** segments, int image_size, unsigned int
 	
 	for (int i = 0; i < end_idx; i++)
 	{
-		memcpy(image + (i * IMAGE_SEGMENT_SIZE), segments[i], IMAGE_SEGMENT_SIZE);
+		memcpy(image + (i * IMAGE_SEGMENT_SIZE), segments[i], IMAGE_SEGMENT_SIZE * sizeof(unsigned int));
 	}
 
 	if (remainder != 0)
 	{
-		memcpy(image + (end_idx * IMAGE_SEGMENT_SIZE), segments[end_idx], remainder);
+		memcpy(image + (end_idx * IMAGE_SEGMENT_SIZE), segments[end_idx], remainder * sizeof(unsigned int));
 	}
 }

@@ -131,13 +131,13 @@ namespace motion_detection
 		int received_bytes = 0;
 		for (int i = 0; i < end_idx; i++)
 		{
-			received_bytes = recv(socketfd, segments[i], IMAGE_SEGMENT_SIZE, 0);
+			received_bytes = recv(socketfd, segments[i], IMAGE_SEGMENT_SIZE * sizeof(unsigned int), 0);
 			if (received_bytes == -1)
 			{
 				std::cerr << "[ERROR]: Receiving segment #" << i << "failed: " << std::strerror(errno) << std::endl;
 				return (int)errno;
 			}
-			else if (received_bytes != IMAGE_SEGMENT_SIZE)
+			else if (received_bytes != IMAGE_SEGMENT_SIZE * sizeof(unsigned int))
 			{
 				std::cout << "[WARNING]: Segment #" << i << " not fully received." << std::endl;
 			}
@@ -145,13 +145,13 @@ namespace motion_detection
 
 		if (remainder != 0)
 		{
-			received_bytes = recv(socketfd, segments[segment_count], remainder, 0);
+			received_bytes = recv(socketfd, segments[segment_count], remainder * sizeof(unsigned int), 0);
 			if (received_bytes == -1)
 			{
 				std::cerr << "[ERROR]: Receiving remaining segment failed:" << std::strerror(errno) << std::endl;
 				return (int)errno;
 			}
-			else if (received_bytes != remainder)
+			else if (received_bytes != remainder * sizeof(unsigned int))
 			{
 				std::cout << "[WARNING]: Remaining segment not fully received." << std::endl;
 			}
