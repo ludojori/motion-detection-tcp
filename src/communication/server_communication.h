@@ -4,6 +4,7 @@
 #include "../../libs/motion-detection/tcp_protocol.h"
 #include "../../libs/third-party/camera/camera.h"
 #include "image_processor.h"
+#include "../button/button.h"
 #include "adafruit/bbio.h"
 
 #include <iostream>
@@ -29,12 +30,15 @@ private:
     std::unordered_map<int, uint64_t> sockIDSensitivity;
     std::mutex mutex;
     ImageProcessor ip;
+    Button button; 
     //static ServerCommunication *instance;
-
+    unsigned int* pixels;
+    // std::mutex picChangeMutex; 
+    // std::condition_variable picChangeCv;
 //  protected:
 
 public:
-    ServerCommunication() = default;
+    ServerCommunication();
     void registerClient(int sockID, uint64_t sensitivity);
     void disconnectClient(const int sockID, bool shouldCloseSocket);
     void read_sensitivity(int sockID);
@@ -44,9 +48,9 @@ public:
     void checkConnectedClients();
     void changePic();
     int initServer(char *port);
-
+    ~ServerCommunication();
   //  void operator=(const ServerCommunication &rhs) = delete;
-    static ServerCommunication *getInstance();
+   // static ServerCommunication *getInstance();
 };
 
 #endif /*SERVER_COMMUNICATION_H*/

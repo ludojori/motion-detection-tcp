@@ -25,7 +25,7 @@ private:
 public:
     uint64_t getAveragePixels(unsigned char *bytePixels, size_t arraySizeInBytes);
     uint64_t calculatePictureDifference(unsigned char *bytePixels, size_t arraySizeInBytes);
-    ImageProcessor() = default;
+    ImageProcessor();
 };
 
 #endif /* IMAGE_PROCESSOR_H */

@@ -9,7 +9,7 @@ executables = server_exe client_exe
 all: server client
 
 server: server.cpp ${camera_lib}camera_arm32.o
-	g++ ${camera_lib}camera_arm32.o server.cpp communication/server_communication.cpp communication/image_processor.cpp -o server -lpthread -Wl,/usr/local/lib/libadafruit-bbio1.so
+	g++ ${camera_lib}camera_arm32.o server.cpp communication/server_communication.cpp communication/image_processor.cpp button/button.cpp -o server -lpthread -Wl,/usr/local/lib/libadafruit-bbio1.so
 	
 
 # server.o: server.cpp

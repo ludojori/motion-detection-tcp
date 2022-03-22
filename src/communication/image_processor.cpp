@@ -29,3 +29,5 @@ ImageProcessor::
     std::cout << "[MESSAGE]: Difference: " << diff << std::endl;
     return diff;
 }
+
+ImageProcessor::ImageProcessor() : oldPictureAverage(0) { }

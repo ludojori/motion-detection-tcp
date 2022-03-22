@@ -49,6 +49,8 @@
         "xmemory": "cpp",
         "xstddef": "cpp",
         "xstring": "cpp",
-        "xtr1common": "cpp"
+        "xtr1common": "cpp",
+        "condition_variable": "cpp",
+        "functional": "cpp"
     }
 }

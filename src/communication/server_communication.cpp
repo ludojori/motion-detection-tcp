@@ -195,32 +195,21 @@ void ServerCommunication::
 void ServerCommunication::
     changePic()
 {
-	adafruit::bbio::init(lib_options(LOG_DEBUG, nullptr, LOG_PERROR));
-	Gpio gpio("P8_43", Gpio::Direction::Input);
-	Gpio::Value position;
-
-	while (true)
-	{
-		position = gpio.get_value();
-		if (position == Gpio::Value::Low)
-		{
-			generateMovement();
-			std::cout << "Picture changed!" << std::endl;
-			int height, width;
-			getResolution(&height, &width);
-			int pixelsCount = height * width;
-
-			unsigned int *pixels = new unsigned int[pixelsCount];
-
-			getCurrentImage(pixels);
-			notifyClients(pixels, pixelsCount);
-			delete[] pixels;
-			std::this_thread::sleep_for(std::chrono::seconds(1));
-		}
-	}
+        generateMovement();
+        std::cout << "Picture changed!" << std::endl;
+        int height, width;
+        getResolution(&height, &width);
+        int pixelsCount = height * width;
+        if (pixels != nullptr)
+        {
+            delete[] pixels;
+        }
+        pixels = new unsigned int[pixelsCount];
+        getCurrentImage(pixels);
+        notifyClients(pixels, pixelsCount);
 }
 
-int ServerCommunication::  
+int ServerCommunication::
     initServer(char *port)
 {
 
@@ -249,8 +238,11 @@ int ServerCommunication::
     }
 
     std::vector<std::thread> threads;
-    std::thread change_pic_thread(&ServerCommunication::changePic, this);
+    //std::thread change_pic_thread(&button.changePic, &button, pixels, picChangeMutex, picChangeCv);
+    //std::thread notify_click_thread(&ServerCommunication::changePic, this);
     std::thread check_connected_clients_thread(&ServerCommunication::checkConnectedClients, this);
+
+    // may be in separate function
     while (true)
     {
         if (sockIDSensitivity.size() >= MAX_CLIENTS)
@@ -269,11 +261,11 @@ int ServerCommunication::
             return (int)errno;
         }
         std::cout << "Connection accepted. SockID: " << sockID << std::endl;
-
+        // TODO: sync
         threads.emplace_back(&ServerCommunication::read_sensitivity, this, sockID);
         std::cout << "Number of connections accepted " << sockIDSensitivity.size() << std::endl;
     }
-    change_pic_thread.join();
+    //change_pic_thread.join();
     check_connected_clients_thread.join();
 }
 
@@ -286,3 +278,14 @@ int ServerCommunication::
 //     }
 //     return instance;
 // }
+
+ServerCommunication::~ServerCommunication()
+{
+    if (pixels != nullptr)
+    {
+        delete[] pixels;
+    }
+}
+
+ServerCommunication::ServerCommunication() : button([this](){this->changePic();}), pixels(nullptr){
+}
