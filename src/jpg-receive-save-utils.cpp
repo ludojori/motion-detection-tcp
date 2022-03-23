@@ -1,4 +1,4 @@
-#include "tcp-client-image-receiver.h"
+#include "jpg-receive-save-utils.h"
 #include <iostream>
 #include <cstring>
 #include <cerrno>
@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <time.h>
 #include "../libs/third-party/stb-image-write/stb_image_write.h"
-#include "image-utils.h"
 #ifdef DEBUG
 #define DEBUG_PRINT(type, msg)							\
 	if (type == "m")		std::cout << "[MESSAGE]: ";	\
@@ -18,7 +17,7 @@
 
 namespace motion_detection
 {
-	int TcpClientImageReceiver::receive_and_save(int socketfd, const char* dir)
+	int JpgReceiveSaveUtils::receive_and_save(int socketfd, const char* dir)
 	{
 		char status_byte = ' ';
 		while (true)
@@ -50,54 +49,32 @@ namespace motion_detection
 				}
 
 				std::cout << "[MESSAGE]: Declaring local variables..." << std::endl;
-				int full_image_buffer_size = packet.fullImageWidth * packet.fullImageHeight;
-				unsigned int* full_image_buffer = new unsigned int[full_image_buffer_size] { 0 };
-				
-				int segment_count = full_image_buffer_size / IMAGE_SEGMENT_SIZE;
-				int remaining_buffer_size = full_image_buffer_size % IMAGE_SEGMENT_SIZE;
-				if (remaining_buffer_size != 0)
+				int image_size = packet.fullImageWidth * packet.fullImageHeight;
+				unsigned int* image_buffer = new unsigned int[image_size] { 0 };
+
+				std::cout << "[MESSAGE]: Receiving image..." << std::endl;
+				int image_error_status = receive_image(socketfd, image_buffer, image_size);
+				if (image_error_status != 0)
 				{
-					segment_count += 1;
+					return image_error_status;
 				}
-
-				unsigned int** segments = new unsigned int*[segment_count];
-				for (int i = 0; i < segment_count; i++)
-				{
-					segments[i] = new unsigned int[IMAGE_SEGMENT_SIZE] { 0 };
-				}
-				
-				std::cout << "[MESSAGE]: Receiving image segments..." << std::endl;
-
-				// Receive segments
-				
-				receive_segments(socketfd, segments, segment_count, remaining_buffer_size);
-
-				// Construct image from segments
-				
-				ImageUtils::construct(segments, full_image_buffer_size, full_image_buffer);
 
 				std::cout << "[MESSAGE]: Fixing image endianess..." << std::endl;
-				little_to_big_endian(full_image_buffer, full_image_buffer_size);
+				little_to_big_endian(image_buffer, image_size);
 
 				std::cout << "[MESSAGE]: Saving image..." << std::endl;
-				if (!try_save_to_jpg(dir, packet.fullImageWidth, packet.fullImageHeight, full_image_buffer))
+				if (!try_save_to_jpg(dir, packet.fullImageWidth, packet.fullImageHeight, image_buffer))
 				{
 					return -1;
 				}
-
-				delete[] full_image_buffer;
-				for (int i = 0; i < segment_count; i++)
-				{
-					delete[] segments[i];
-				}
-				delete[] segments;
+				std::cout << "[MESSAGE]: Done." << std::endl;
 			}
 
 			return 0;
 		}
 	}
 
-	int TcpClientImageReceiver::receive_config_packet(int socketfd, ConfigPacket* packet)
+	int JpgReceiveSaveUtils::receive_config_packet(int socketfd, ConfigPacket* packet)
 	{
 			int packet_bytes = recv(socketfd, packet, sizeof(packet), 0);
 
@@ -119,48 +96,47 @@ namespace motion_detection
 			return 0;
 	}
 
-	int TcpClientImageReceiver::receive_segments(int socketfd, unsigned int** segments, int segment_count, int remainder)
+	int JpgReceiveSaveUtils::receive_image(int socketfd, unsigned int* image_buffer, const int image_size)
 	{
-		int end_idx = segment_count;
+		int image_size_in_bytes = image_size * sizeof(unsigned int);
+		unsigned char temp_buffer[image_size_in_bytes];
 		
-		if (remainder != 0)
+		int curr_recv_bytes = 0;
+		int last_byte_idx = 0;
+		while (true)
 		{
-			end_idx -= 1;
-		}
-
-		int received_bytes = 0;
-		for (int i = 0; i < end_idx; i++)
-		{
-			received_bytes = recv(socketfd, segments[i], IMAGE_SEGMENT_SIZE * sizeof(unsigned int), 0);
-			if (received_bytes == -1)
+			curr_recv_bytes = recv(socketfd, temp_buffer + last_byte_idx, image_size_in_bytes - last_byte_idx, 0);
+			if (curr_recv_bytes == -1)
 			{
-				std::cerr << "[ERROR]: Receiving segment #" << i << "failed: " << std::strerror(errno) << std::endl;
+				std::cerr << "[ERROR]: Receiving image failed: " << std::strerror(errno) << std::endl;
 				return (int)errno;
 			}
-			else if (received_bytes != IMAGE_SEGMENT_SIZE * sizeof(unsigned int))
+			else if (curr_recv_bytes == 0)
 			{
-				std::cout << "[WARNING]: Segment #" << i << " not fully received." << std::endl;
+				break;
 			}
+
+			last_byte_idx += curr_recv_bytes;
+			if (last_byte_idx > image_size_in_bytes)
+			{
+				std::cout << "[WARNING]: Byte index exceeded buffer size by "
+						<< image_size_in_bytes - last_byte_idx << " bytes." << std::endl;
+			}
+			else
+			{
+				std::cout << "[MESSAGE]: Received " << last_byte_idx << "/" << image_size_in_bytes
+						<< " bytes..." << std::endl;
+			}
+			
 		}
 
-		if (remainder != 0)
-		{
-			received_bytes = recv(socketfd, segments[segment_count], remainder * sizeof(unsigned int), 0);
-			if (received_bytes == -1)
-			{
-				std::cerr << "[ERROR]: Receiving remaining segment failed:" << std::strerror(errno) << std::endl;
-				return (int)errno;
-			}
-			else if (received_bytes != remainder * sizeof(unsigned int))
-			{
-				std::cout << "[WARNING]: Remaining segment not fully received." << std::endl;
-			}
-		}
+		std::cout << "[MESSAGE]: Done." << std::endl;
+		memcpy(image_buffer, temp_buffer, image_size_in_bytes);
 	
 		return 0;
 	}
 
-	unsigned int* TcpClientImageReceiver::little_to_big_endian(unsigned int* data, const int& length)
+	unsigned int* JpgReceiveSaveUtils::little_to_big_endian(unsigned int* data, const int length)
 	{
 		for (int i = 0; i < length; i++)
 		{
@@ -169,7 +145,7 @@ namespace motion_detection
 		return data;
 	}
 
-	bool TcpClientImageReceiver::try_save_to_jpg(const char* dir, const int width, const int height, unsigned int* pixels)
+	bool JpgReceiveSaveUtils::try_save_to_jpg(const char* dir, const int width, const int height, unsigned int* pixels)
 	{
 		time_t rawtime;
 		struct tm* timeinfo;
