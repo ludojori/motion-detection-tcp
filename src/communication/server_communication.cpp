@@ -86,7 +86,10 @@ void ServerCommunication::
     struct ConfigPacket packet;
     packet.fullImageWidth = width;
     packet.fullImageHeight = height;
-    packet.imageSegmentCount = segmentCount;
+    packet.imageSegmentCount = 0;
+    std::cout << "[MESSAGE]: Parameters are: width = " << packet.fullImageWidth
+              << " height = " << packet.fullImageHeight
+              << " segment_count = " << packet.imageSegmentCount << std::endl;
 
     int packet_bytes = send(sockID, &packet, sizeof(ConfigPacket), 0);
     if (packet_bytes == -1)
@@ -98,6 +101,7 @@ void ServerCommunication::
         std::cout << "[WARNING]: ConfigPacket not fully sent." << std::endl;
     }
 
+<<<<<<< Updated upstream
 	int image_size_in_bytes = sizeOfPicture * sizeof(unsigned int);
 	unsigned char temp_buffer[image_size_in_bytes];
 	memcpy(temp_buffer, fullImage, image_size_in_bytes);
@@ -130,6 +134,40 @@ void ServerCommunication::
 					<< " bytes..." << std::endl;
 		}
 	}
+=======
+    int image_size_in_bytes = sizeOfPicture * sizeof(unsigned int);
+    unsigned char temp_buffer[image_size_in_bytes];
+    memcpy(temp_buffer, fullImage, image_size_in_bytes);
+
+    int curr_sent_bytes = 0;
+    int last_byte_idx = 0;
+    while (true)
+    {
+        curr_sent_bytes = send(sockID, temp_buffer + last_byte_idx, image_size_in_bytes - last_byte_idx, 0);
+        if (curr_sent_bytes == -1)
+        {
+            std::cerr << "[ERROR]: Sending image failed: " << std::strerror(errno) << std::endl;
+            // TODO: exception handling
+        }
+        else if (curr_sent_bytes == 0)
+        {
+            std::cout << "[MESSAGE]: No bytes left to send." << std::endl;
+            break;
+        }
+
+        last_byte_idx += curr_sent_bytes;
+        if (last_byte_idx > image_size_in_bytes)
+        {
+            std::cout << "[WARNING]: Byte index exceeded buffer size by "
+                      << image_size_in_bytes - last_byte_idx << " bytes." << std::endl;
+        }
+        else
+        {
+            std::cout << "[MESSAGE]: Sent " << last_byte_idx << "/" << image_size_in_bytes
+                      << " bytes..." << std::endl;
+        }
+    }
+>>>>>>> Stashed changes
 }
 
 void ServerCommunication::
@@ -184,18 +222,18 @@ void ServerCommunication::
 void ServerCommunication::
     changePic()
 {
-        generateMovement();
-        std::cout << "Picture changed!" << std::endl;
-        int height, width;
-        getResolution(&height, &width);
-        int pixelsCount = height * width;
-        if (pixels != nullptr)
-        {
-            delete[] pixels;
-        }
-        pixels = new unsigned int[pixelsCount];
-        getCurrentImage(pixels);
-        notifyClients(pixels, pixelsCount);
+    generateMovement();
+    std::cout << "Picture changed!" << std::endl;
+    int height, width;
+    getResolution(&height, &width);
+    int pixelsCount = height * width;
+    if (pixels != nullptr)
+    {
+        delete[] pixels;
+    }
+    pixels = new unsigned int[pixelsCount];
+    getCurrentImage(pixels);
+    notifyClients(pixels, pixelsCount);
 }
 
 int ServerCommunication::
@@ -227,8 +265,8 @@ int ServerCommunication::
     }
 
     std::vector<std::thread> threads;
-    //std::thread change_pic_thread(&button.changePic, &button, pixels, picChangeMutex, picChangeCv);
-    //std::thread notify_click_thread(&ServerCommunication::changePic, this);
+    // std::thread change_pic_thread(&button.changePic, &button, pixels, picChangeMutex, picChangeCv);
+    // std::thread notify_click_thread(&ServerCommunication::changePic, this);
     std::thread check_connected_clients_thread(&ServerCommunication::checkConnectedClients, this);
 
     // may be in separate function
@@ -254,7 +292,7 @@ int ServerCommunication::
         threads.emplace_back(&ServerCommunication::read_sensitivity, this, sockID);
         std::cout << "Number of connections accepted " << sockIDSensitivity.size() << std::endl;
     }
-    //change_pic_thread.join();
+    // change_pic_thread.join();
     check_connected_clients_thread.join();
 }
 
@@ -276,5 +314,8 @@ ServerCommunication::~ServerCommunication()
     }
 }
 
-ServerCommunication::ServerCommunication() : button([this](){this->changePic();}), pixels(nullptr){
+ServerCommunication::ServerCommunication() : button([this]()
+                                                    { this->changePic(); }),
+                                             pixels(nullptr)
+{
 }
