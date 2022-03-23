@@ -4,7 +4,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <time.h>
-#include "tcp-client-image-receiver.h"
+#include "jpg-receive-save-utils.h"
 
 using namespace motion_detection;
 
@@ -62,7 +62,7 @@ int main(int argc, char** args)
     }
     errno = 0;
     
-    int receiver_error_status = TcpClientImageReceiver::receive_and_save(client_socket, "../images/");
+    int receiver_error_status = JpgReceiveSaveUtils::receive_and_save(client_socket, "../images/");
     if (receiver_error_status != 0)
     {
     	return receiver_error_status;

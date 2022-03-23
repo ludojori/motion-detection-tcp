@@ -68,10 +68,12 @@ namespace motion_detection
 					return -1;
 				}
 				std::cout << "[MESSAGE]: Done." << std::endl;
+				status_byte = ' ';
 			}
 
-			return 0;
 		}
+
+		return 0;
 	}
 
 	int JpgReceiveSaveUtils::receive_config_packet(int socketfd, ConfigPacket* packet)
