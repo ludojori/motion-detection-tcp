@@ -113,7 +113,6 @@ namespace motion_detection
 			}
 			else if (curr_recv_bytes == 0)
 			{
-				std::cout << "[MESSAGE]: No bytes left to receive." << std::endl;
 				break;
 			}
 
