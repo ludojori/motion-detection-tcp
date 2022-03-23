@@ -72,10 +72,6 @@ void ServerCommunication::
     getResolution(&width, &height);
     int sizeOfPicture = height * width;
 
-    unsigned int *imageSegment = new unsigned int[IMAGE_SEGMENT_SIZE]{0};
-    int segmentCount = sizeOfPicture / IMAGE_SEGMENT_SIZE;
-    std::cout << "Image segment count: " << segmentCount << std::endl;
-
     char statusByte = static_cast<char>(Status::MOTION_DETECTED);
     if (send(sockID, &statusByte, 1, 0) == -1)
     {
@@ -102,46 +98,38 @@ void ServerCommunication::
         std::cout << "[WARNING]: ConfigPacket not fully sent." << std::endl;
     }
 
-    // Send segments
+	int image_size_in_bytes = sizeOfPicture * sizeof(unsigned int);
+	unsigned char temp_buffer[image_size_in_bytes];
+	memcpy(temp_buffer, fullImage, image_size_in_bytes);
 
-    int segmentBytes = IMAGE_SEGMENT_SIZE * sizeof(unsigned int);
-    int index = 0;
-    int sending = 0;
+	int curr_sent_bytes = 0;
+	int last_byte_idx = 0;
+	while (true)
+	{
+		curr_sent_bytes = send(sockID, temp_buffer + last_byte_idx, image_size_in_bytes - last_byte_idx, 0);
+		if (curr_sent_bytes == -1)
+		{
+			std::cerr << "[ERROR]: Sending image failed: " << std::strerror(errno) << std::endl;
+			// TODO: exception handling
+		}
+		else if (curr_sent_bytes == 0)
+		{
+			std::cout << "[MESSAGE]: No bytes left to send." << std::endl;
+			break;
+		}
 
-    for (int i = 0; i < segmentCount; i++)
-    {
-        memcpy(imageSegment, fullImage + index, segmentBytes);
-        sending = send(sockID, imageSegment, segmentBytes, 0);
-        if (sending == -1)
-        {
-            std::cerr << "[ERROR]: Sending image segment failed: " << std::strerror(errno) << std::endl;
-            // TODO: exception handling
-        }
-        if (sending != segmentBytes)
-        {
-            std::cout << "[WARNING]: Segment package No." << i + 1 << " not fully sent." << std::endl;
-        }
-        index += IMAGE_SEGMENT_SIZE;
-    }
-
-    // Send remaining bytes
-
-    int remainingBytes = (sizeOfPicture % IMAGE_SEGMENT_SIZE) * sizeof(unsigned int);
-    if (remainingBytes > 0)
-    {
-        std::cout << "[MESSAGE]: Sending remaining " << remainingBytes << " bytes..." << std::endl;
-        memcpy(imageSegment, fullImage + index, remainingBytes);
-        sending = send(sockID, imageSegment, remainingBytes, 0);
-        if (sending == -1)
-        {
-            std::cerr << "[ERROR]: Sending remaining image segment failed: " << std::strerror(errno) << std::endl;
-        }
-        else if (sending != remainingBytes)
-        {
-            std::cout << "[WARNING]: Remaining segment not fully sent." << std::endl;
-        }
-    }
-    delete[] imageSegment;
+		last_byte_idx += curr_sent_bytes;
+		if (last_byte_idx > image_size_in_bytes)
+		{
+			std::cout << "[WARNING]: Byte index exceeded buffer size by "
+					<< image_size_in_bytes - last_byte_idx << " bytes." << std::endl;
+		}
+		else
+		{
+			std::cout << "[MESSAGE]: Sent " << last_byte_idx << "/" << image_size_in_bytes
+					<< " bytes..." << std::endl;
+		}
+	}
 }
 
 void ServerCommunication::
@@ -153,6 +141,7 @@ void ServerCommunication::
     bytePixels = (unsigned char *)pixels;
 
     uint64_t diff = ip.calculatePictureDifference(bytePixels, sizeInBytes);
+    delete[] bytePixels;
 
     // check all clients if they should be notified
     mutex.lock();
