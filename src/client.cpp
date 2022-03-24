@@ -4,7 +4,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <time.h>
-#include "jpg-receive-save-utils.h"
+#include "../include/motion-detection-tcp/jpg-receive-save-utils.h"
 
 using namespace motion_detection;
 
@@ -76,7 +76,7 @@ int main(int argc, char** args)
 		return (int)errno;
 	}
 
-	std::cout << "[MESSAGE]: Operation successful." << std::endl;
+	std::cout << "[MESSAGE]: Client shutting down." << std::endl;
 	
     return 0;
 }

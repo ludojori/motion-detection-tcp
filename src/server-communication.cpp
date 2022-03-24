@@ -1,4 +1,4 @@
-#include "server_communication.h"
+#include "../include/motion-detection-tcp/server-communication.h"
 #include "adafruit/bbio.h"
 
 using namespace motion_detection;
@@ -8,10 +8,10 @@ void ServerCommunication::
     registerClient(int sockID, uint64_t sensitivity)
 {
     mutex.lock();
-    std::cout << "Locked";
+    std::cout << "[MESSAGE]: Locked.";
     sockIDSensitivity.insert({sockID, sensitivity});
     mutex.unlock();
-    std::cout << "Unlock";
+    std::cout << "[MESSAGE]: Unlocked.";
 }
 
 void ServerCommunication::
@@ -42,10 +42,10 @@ void ServerCommunication::
         std::cout << "[WARNING]: Partially received sensitivity threshold." << std::endl;
     }
 
-    std::cout << "Before register: sens = " << sens << std::endl;
+    std::cout << "[MESSAGE]: Before register: sens = " << sens << std::endl;
     registerClient(sockID, sens);
     mutex.lock();
-    std::cout << "Sensitivity: " << sens << " from map: " << sockIDSensitivity.at(sockID) << std::endl;
+    std::cout << "[MESSAGE]: Sensitivity: " << sens << " from map: " << sockIDSensitivity.at(sockID) << std::endl;
     mutex.unlock();
 }
 
@@ -59,8 +59,8 @@ bool ServerCommunication::
     if (retval == 0 && error != 0)
     {
         std::cerr << "[ERROR]: Client socket failed: " << std::strerror(error) << std::endl;
-        return false;
         disconnectClient(sockID);
+        return false;
     }
     return true;
 }
@@ -84,12 +84,10 @@ void ServerCommunication::
     }
 
     struct ConfigPacket packet;
-    packet.fullImageWidth = width;
-    packet.fullImageHeight = height;
-    packet.imageSegmentCount = 0;
-    std::cout << "[MESSAGE]: Parameters are: width = " << packet.fullImageWidth
-              << " height = " << packet.fullImageHeight
-              << " segment_count = " << packet.imageSegmentCount << std::endl;
+    packet.image_width = width;
+    packet.image_height = height;
+    std::cout << "[MESSAGE]: Sending ConfigPacket with parameters: width = "
+        << packet.image_width << " height = " << packet.image_height << " ..." << std::endl;
 
     int packet_bytes = send(sockID, &packet, sizeof(ConfigPacket), 0);
     if (packet_bytes == -1)
@@ -100,8 +98,11 @@ void ServerCommunication::
     {
         std::cout << "[WARNING]: ConfigPacket not fully sent." << std::endl;
     }
+    else
+    {
+        std::cout << "[MESSAGE] ConfigPacket successfully sent." << std::endl;
+    }
 
-<<<<<<< Updated upstream
 	int image_size_in_bytes = sizeOfPicture * sizeof(unsigned int);
 	unsigned char temp_buffer[image_size_in_bytes];
 	memcpy(temp_buffer, fullImage, image_size_in_bytes);
@@ -130,11 +131,11 @@ void ServerCommunication::
 		}
 		else
 		{
-			std::cout << "[MESSAGE]: Sent " << last_byte_idx << "/" << image_size_in_bytes
-					<< " bytes..." << std::endl;
+			std::cout << "[MESSAGE]: Sent " << last_byte_idx << "/"
+                << image_size_in_bytes << " bytes..." << std::endl;
 		}
 	}
-=======
+
     int image_size_in_bytes = sizeOfPicture * sizeof(unsigned int);
     unsigned char temp_buffer[image_size_in_bytes];
     memcpy(temp_buffer, fullImage, image_size_in_bytes);
@@ -167,7 +168,6 @@ void ServerCommunication::
                       << " bytes..." << std::endl;
         }
     }
->>>>>>> Stashed changes
 }
 
 void ServerCommunication::
@@ -183,15 +183,17 @@ void ServerCommunication::
 
     // check all clients if they should be notified
     mutex.lock();
+    int notified_clients_count = 0;
     for (auto &i : sockIDSensitivity)
     {
         if (i.second <= diff)
         {
             sendPicture(i.first, pixels);
+            notified_clients_count++;
         }
     }
     mutex.unlock();
-    std::cout << "Clients checked" << std::endl;
+    std::cout << "[MESSAGE]: " << notified_clients_count << " clients notified." << std::endl;
 }
 
 void ServerCommunication::
@@ -223,7 +225,7 @@ void ServerCommunication::
     changePic()
 {
     generateMovement();
-    std::cout << "Picture changed!" << std::endl;
+    std::cout << "[MESSAGE]: Picture changed!" << std::endl;
     int height, width;
     getResolution(&height, &width);
     int pixelsCount = height * width;
@@ -277,7 +279,7 @@ int ServerCommunication::
             continue;
             // wait until disconnect
         }
-        std::cout << "Listining" << std::endl;
+        std::cout << "[MESSAGE]: Listening..." << std::endl;
         sockaddr_in cliAddr;
         socklen_t len = sizeof(cliAddr);
         sockID = accept(listener, (struct sockaddr *)&cliAddr, &len);
@@ -287,10 +289,10 @@ int ServerCommunication::
             std::cerr << "[ERROR]: Function accept() failed: " << std::strerror(errno) << std::endl;
             return (int)errno;
         }
-        std::cout << "Connection accepted. SockID: " << sockID << std::endl;
+        std::cout << "[MESSAGE]: Connection accepted. SockID: " << sockID << std::endl;
         // TODO: sync
         threads.emplace_back(&ServerCommunication::read_sensitivity, this, sockID);
-        std::cout << "Number of connections accepted " << sockIDSensitivity.size() << std::endl;
+        std::cout << "[MESSAGE]: Number of connections accepted: " << sockIDSensitivity.size() << std::endl;
     }
     // change_pic_thread.join();
     check_connected_clients_thread.join();

@@ -1,8 +1,8 @@
-#include "../libs/motion-detection/tcp_protocol.h"
-#include "../libs/third-party/camera/camera.h"
-#include "/home/debian/motion-detection-tcp/src/communication/server_communication.h"
-#include "/home/debian/motion-detection-tcp/src/communication/image_processor.h"
-#include "adafruit/bbio.h"
+#include "../include/motion-detection-tcp/server-communication.h"
+//#include "../include/motion-detection-tcp/tcp-protocol.h"
+//#include "../include/third-party/camera/camera.h"
+//#include "../include/motion-detection-tcp/image-processor.h"
+//#include "adafruit/bbio.h"
 
 int main(int argc, char **args)
 {

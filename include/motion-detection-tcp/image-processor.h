@@ -2,8 +2,8 @@
 #define IMAGE_PROCESSOR_H
 
 
-#include "../../libs/motion-detection/tcp_protocol.h"
-#include "../../libs/third-party/camera/camera.h"
+#include "../third-party/camera/camera.h"
+#include "tcp-protocol.h"
 #include "adafruit/bbio.h"
 
 #include <iostream>

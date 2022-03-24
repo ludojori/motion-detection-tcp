@@ -1,7 +1,7 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include "../../libs/third-party/camera/camera.h"
+#include "../third-party/camera/camera.h"
 #include "adafruit/bbio.h"
 
 #include <thread>

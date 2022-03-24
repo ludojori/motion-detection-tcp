@@ -11,9 +11,8 @@ namespace motion_detection
 
 	struct ConfigPacket
 	{
-		int fullImageWidth;
-		int fullImageHeight;
-		int imageSegmentCount;
+		int image_width;
+		int image_height;
 	};
 }
 

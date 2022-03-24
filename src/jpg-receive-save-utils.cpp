@@ -1,4 +1,5 @@
-#include "jpg-receive-save-utils.h"
+#include "../include/motion-detection-tcp/jpg-receive-save-utils.h"
+#include "../include/third-party/stb-image-write/stb-image-write.h"
 #include <iostream>
 #include <cstring>
 #include <cerrno>
@@ -6,7 +7,6 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <time.h>
-#include "../../libs/third-party/stb-image-write/stb_image_write.h"
 #ifdef DEBUG
 #define DEBUG_PRINT(type, msg)      \
 	if (type == "m")                \
@@ -41,7 +41,6 @@ namespace motion_detection
 			else if (status_byte == (char)Status::MOTION_DETECTED)
 			{
 				std::cout << "[MESSAGE]: Received status byte MOTION_DETECTED." << std::endl;
-				std::cout << "[MESSAGE]: Attempting to receive config packet..." << std::endl;
 
 				// Receive ConfigPacket
 
@@ -52,8 +51,7 @@ namespace motion_detection
 					return config_packet_error_status;
 				}
 
-				std::cout << "[MESSAGE]: Declaring local variables..." << std::endl;
-				int image_size = packet.fullImageWidth * packet.fullImageHeight;
+				int image_size = packet.image_width * packet.image_height;
 				unsigned int *image_buffer = new unsigned int[image_size]{0};
 
 				std::cout << "[MESSAGE]: Receiving image..." << std::endl;
@@ -92,11 +90,9 @@ namespace motion_detection
 		}
 		else
 		{
-			std::cout << "[MESSAGE]: Config packet received." << std::endl;
+			std::cout << "[MESSAGE]: ConfigPacket received with parameters: width = "
+				<< packet->image_width << " height = " << packet->image_height << std::endl;
 		}
-		std::cout << "[MESSAGE]: Parameters are: width = " << packet->fullImageWidth
-				  << " height = " << packet->fullImageHeight
-				  << " segment_count = " << packet->imageSegmentCount << std::endl;
 
 		return 0;
 	}

@@ -1,4 +1,4 @@
-#include "image_processor.h"
+#include "../include/motion-detection-tcp/image-processor.h"
 
 uint64_t
 ImageProcessor::

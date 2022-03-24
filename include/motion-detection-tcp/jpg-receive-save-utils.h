@@ -1,6 +1,6 @@
 #ifndef JPG_RECEIVE_SAVE_UTILS
 #define JPG_RECEIVE_SAVE_UTILS
-#include "../../libs/motion-detection/tcp_protocol.h"
+#include "tcp-protocol.h"
 
 namespace motion_detection
 {
