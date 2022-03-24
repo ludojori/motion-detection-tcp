@@ -63,7 +63,7 @@ int main(int argc, char** args)
     errno = 0;
     
     JpgReceiveSaveUtils utils;  
-    int errorStatus = utils.receiveAndSave(clientSocket, "../../images/", 50);
+    int errorStatus = utils.receiveAndSave(clientSocket, "../images/", 50);
     if (errorStatus != 0)
     {
     	return errorStatus;

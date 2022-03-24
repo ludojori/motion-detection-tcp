@@ -30,11 +30,8 @@ private:
     std::mutex mutex;
     ImageProcessor ip;
     Button button; 
-    //static ServerCommunication *instance;
     unsigned int* pixels;
-    // std::mutex picChangeMutex; 
-    // std::condition_variable picChangeCv;
-//  protected:
+
     void registerClient(int sockID, uint64_t sensitivity);
     void disconnectClient(const int sockID, bool shouldCloseSocket);
     void readSensitivity(int sockID);
@@ -52,8 +49,6 @@ public:
     int initServer(char *port);
 
     ~ServerCommunication();
-    // void operator=(const ServerCommunication &rhs) = delete;
-    // static ServerCommunication *getInstance();
 };
 
 #endif /* SERVER_COMMUNICATION_H */
