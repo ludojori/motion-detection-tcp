@@ -21,8 +21,8 @@ int main(int argc, char** args)
 
     std::cout << "[MESSAGE]: Creating socket..." << std::endl;
 
-    int client_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (client_socket == -1)
+    int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (clientSocket == -1)
     {
         std::cerr << "[ERROR]: Function socket() failed with error code: " << std::strerror(errno) << std::endl;
         return (int)errno;
@@ -38,10 +38,10 @@ int main(int argc, char** args)
 
 	std::cout << "[MESSAGE]: Connecting to server..." << std::endl;
 
-    if (connect(client_socket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
+    if (connect(clientSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1)
     {
         std::cerr << "[ERROR]: Function connect() failed with error code: " << std::strerror(errno) << std::endl;
-        close(client_socket);
+        close(clientSocket);
         return (int)errno;
     }
     errno = 0;
@@ -49,28 +49,28 @@ int main(int argc, char** args)
     std::cout << "[MESSAGE]: Connection accepted." << std::endl;
     
     uint64_t sensitivity = atoi(args[3]);
-    int sens_bytes = send(client_socket, &sensitivity, sizeof(sensitivity), 0);
-    if (sens_bytes == -1)
+    int sensBytes = send(clientSocket, &sensitivity, sizeof(sensitivity), 0);
+    if (sensBytes == -1)
     {
         std::cerr << "[ERROR]: Failed to send sensitivity threshold with error code: " << std::strerror(errno) << std::endl;
-        close(client_socket);
+        close(clientSocket);
         return (int)errno;
     }
-    else if (sens_bytes != sizeof(sensitivity))
+    else if (sensBytes != sizeof(sensitivity))
     {
     	std::cout << "[WARNING]: Partially sent sensitivity threshold." << std::endl;
     }
     errno = 0;
     
     JpgReceiveSaveUtils utils;  
-    int receiver_error_status = utils.receive_and_save(client_socket, "../../images/");
-    if (receiver_error_status != 0)
+    int errorStatus = utils.receiveAndSave(clientSocket, "../../images/", 50);
+    if (errorStatus != 0)
     {
-    	return receiver_error_status;
+    	return errorStatus;
     }
     errno = 0;
 
-	if (close(client_socket) == -1)
+	if (close(clientSocket) == -1)
 	{
 		std::cerr << "[ERROR]: Function close() failed with error code: " << std::strerror(errno) << std::endl;
 		return (int)errno;

@@ -1,4 +1,5 @@
 #include "../include/motion-detection-tcp/button.h"
+
 using namespace adafruit::bbio;
 
 // void Button::checkClicked()
@@ -38,7 +39,8 @@ void Button::checkClicked(std::function<void()> onClick)
     }
 }
 
-Button::~Button() {
+Button::~Button()
+{
     buttonAlive = false;
     clickCheckThread.join();    
 }

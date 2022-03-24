@@ -1,7 +1,6 @@
 #ifndef IMAGE_PROCESSOR_H
 #define IMAGE_PROCESSOR_H
 
-
 #include "../third-party/camera/camera.h"
 #include "tcp-protocol.h"
 #include "adafruit/bbio.h"

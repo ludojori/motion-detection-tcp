@@ -8,10 +8,10 @@ void ServerCommunication::
     registerClient(int sockID, uint64_t sensitivity)
 {
     mutex.lock();
-    std::cout << "[MESSAGE]: Locked.";
+    std::cout << "[MESSAGE]: Locked." << std::endl;
     sockIDSensitivity.insert({sockID, sensitivity});
     mutex.unlock();
-    std::cout << "[MESSAGE]: Unlocked.";
+    std::cout << "[MESSAGE]: Unlocked." << std::endl;
 }
 
 void ServerCommunication::
@@ -26,7 +26,7 @@ void ServerCommunication::
 }
 
 void ServerCommunication::
-    read_sensitivity(int sockID)
+    readSensitivity(int sockID)
 {
     uint64_t sens;
     const int SENSITIVITY_LENGTH = sizeof(uint64_t);
@@ -84,12 +84,21 @@ void ServerCommunication::
     }
 
     struct ConfigPacket packet;
-    packet.image_width = width;
-    packet.image_height = height;
-    std::cout << "[MESSAGE]: Sending ConfigPacket with parameters: width = "
-        << packet.image_width << " height = " << packet.image_height << " ..." << std::endl;
+    packet.imageWidth = width;
+    packet.imageHeight = height;
 
-    int packet_bytes = send(sockID, &packet, sizeof(ConfigPacket), 0);
+    sendConfigPacket(sockID, &packet);
+	sendImage(sockID, fullImage);
+
+    std::cout << "[MESSAGE]: Done." << std::endl;
+}
+
+void ServerCommunication::sendConfigPacket(int sockID, ConfigPacket* packet)
+{
+    std::cout << "[MESSAGE]: Sending ConfigPacket with parameters: width = "
+        << packet->imageWidth << " height = " << packet->imageHeight << " ..." << std::endl;
+
+    int packet_bytes = send(sockID, packet, sizeof(ConfigPacket), 0);
     if (packet_bytes == -1)
     {
         std::cerr << "[ERROR]: Sending ConfigPacket failed: " << std::strerror(errno) << std::endl;
@@ -102,72 +111,40 @@ void ServerCommunication::
     {
         std::cout << "[MESSAGE] ConfigPacket successfully sent." << std::endl;
     }
+}
 
-	int image_size_in_bytes = sizeOfPicture * sizeof(unsigned int);
-	unsigned char temp_buffer[image_size_in_bytes];
-	memcpy(temp_buffer, fullImage, image_size_in_bytes);
+void sendImage(int sockID, unsigned int* fullImage, int imageSize)
+{
+    unsigned char* bufferPtr = (unsigned char*)fullImage;
 
-	int curr_sent_bytes = 0;
-	int last_byte_idx = 0;
+	int imageSizeInBytes = imageSize * sizeof(unsigned int);
+	int currSentBytes = 0;
+	int lastByteIdx = 0;
 	while (true)
 	{
-		curr_sent_bytes = send(sockID, temp_buffer + last_byte_idx, image_size_in_bytes - last_byte_idx, 0);
-		if (curr_sent_bytes == -1)
+		currSentBytes = send(sockID, bufferPtr + lastByteIdx, imageSizeInBytes - lastByteIdx, 0);
+		if (currSentBytes == -1)
 		{
 			std::cerr << "[ERROR]: Sending image failed: " << std::strerror(errno) << std::endl;
 			// TODO: exception handling
 		}
-		else if (curr_sent_bytes == 0)
+		else if (currSentBytes == 0)
 		{
 			std::cout << "[MESSAGE]: No bytes left to send." << std::endl;
 			break;
 		}
 
-		last_byte_idx += curr_sent_bytes;
-		if (last_byte_idx > image_size_in_bytes)
+		lastByteIdx += currSentBytes;
+		if (lastByteIdx > imageSizeInBytes)
 		{
 			std::cout << "[WARNING]: Byte index exceeded buffer size by "
-					<< image_size_in_bytes - last_byte_idx << " bytes." << std::endl;
+					<< imageSizeInBytes - lastByteIdx << " bytes." << std::endl;
 		}
 		else
 		{
-			std::cout << "[MESSAGE]: Sent " << last_byte_idx << "/"
-                << image_size_in_bytes << " bytes..." << std::endl;
+			std::cout << "[MESSAGE]: Sent " << lastByteIdx << "/"
+                << imageSizeInBytes << " bytes..." << std::endl;
 		}
-	}
-
-    int image_size_in_bytes = sizeOfPicture * sizeof(unsigned int);
-    unsigned char temp_buffer[image_size_in_bytes];
-    memcpy(temp_buffer, fullImage, image_size_in_bytes);
-
-    int curr_sent_bytes = 0;
-    int last_byte_idx = 0;
-    while (true)
-    {
-        curr_sent_bytes = send(sockID, temp_buffer + last_byte_idx, image_size_in_bytes - last_byte_idx, 0);
-        if (curr_sent_bytes == -1)
-        {
-            std::cerr << "[ERROR]: Sending image failed: " << std::strerror(errno) << std::endl;
-            // TODO: exception handling
-        }
-        else if (curr_sent_bytes == 0)
-        {
-            std::cout << "[MESSAGE]: No bytes left to send." << std::endl;
-            break;
-        }
-
-        last_byte_idx += curr_sent_bytes;
-        if (last_byte_idx > image_size_in_bytes)
-        {
-            std::cout << "[WARNING]: Byte index exceeded buffer size by "
-                      << image_size_in_bytes - last_byte_idx << " bytes." << std::endl;
-        }
-        else
-        {
-            std::cout << "[MESSAGE]: Sent " << last_byte_idx << "/" << image_size_in_bytes
-                      << " bytes..." << std::endl;
-        }
-    }
 }
 
 void ServerCommunication::
@@ -183,17 +160,17 @@ void ServerCommunication::
 
     // check all clients if they should be notified
     mutex.lock();
-    int notified_clients_count = 0;
+    int notifiedClientsCount = 0;
     for (auto &i : sockIDSensitivity)
     {
         if (i.second <= diff)
         {
             sendPicture(i.first, pixels);
-            notified_clients_count++;
+            notifiedClientsCount++;
         }
     }
     mutex.unlock();
-    std::cout << "[MESSAGE]: " << notified_clients_count << " clients notified." << std::endl;
+    std::cout << "[MESSAGE]: " << notifiedClientsCount << " clients notified." << std::endl;
 }
 
 void ServerCommunication::
@@ -226,14 +203,17 @@ void ServerCommunication::
 {
     generateMovement();
     std::cout << "[MESSAGE]: Picture changed!" << std::endl;
+
     int height, width;
     getResolution(&height, &width);
     int pixelsCount = height * width;
+
     if (pixels != nullptr)
     {
         delete[] pixels;
     }
     pixels = new unsigned int[pixelsCount];
+
     getCurrentImage(pixels);
     notifyClients(pixels, pixelsCount);
 }
@@ -241,7 +221,6 @@ void ServerCommunication::
 int ServerCommunication::
     initServer(char *port)
 {
-
     int sockID = 0;
 
     int listener = socket(PF_INET, SOCK_STREAM, 0);
@@ -291,7 +270,7 @@ int ServerCommunication::
         }
         std::cout << "[MESSAGE]: Connection accepted. SockID: " << sockID << std::endl;
         // TODO: sync
-        threads.emplace_back(&ServerCommunication::read_sensitivity, this, sockID);
+        threads.emplace_back(&ServerCommunication::readSensitivity, this, sockID);
         std::cout << "[MESSAGE]: Number of connections accepted: " << sockIDSensitivity.size() << std::endl;
     }
     // change_pic_thread.join();

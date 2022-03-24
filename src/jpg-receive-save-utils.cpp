@@ -20,124 +20,130 @@
 
 namespace motion_detection
 {
-	int JpgReceiveSaveUtils::receive_and_save(int socketfd, const char *dir)
+	int JpgReceiveSaveUtils::receiveAndSave(int socketfd, const char *dir, int quality)
 	{
-		char status_byte = ' ';
+		int errorStatus = 0;
+		char statusByte = ' ';
 		while (true)
 		{
 			// Receive status byte
 
-			if (recv(socketfd, &status_byte, 1, 0) == -1)
+			if (recv(socketfd, &statusByte, 1, 0) == -1)
 			{
 				std::cerr << "[ERROR]: Receiving status byte failed: " << std::strerror(errno) << std::endl;
 				return (int)errno;
 			}
 
-			if (status_byte == (char)Status::STILL_IMAGE)
+			if (statusByte == (char)Status::STILL_IMAGE)
 			{
 				std::cout << "[MESSAGE]: Received status byte STILL_IMAGE." << std::endl;
 				continue;
 			}
-			else if (status_byte == (char)Status::MOTION_DETECTED)
+			else if (statusByte == (char)Status::MOTION_DETECTED)
 			{
 				std::cout << "[MESSAGE]: Received status byte MOTION_DETECTED." << std::endl;
 
 				// Receive ConfigPacket
 
+				std::cout << "[MESSAGE]: Receiving ConfigPacket..." << std::endl;
 				ConfigPacket packet;
-				int config_packet_error_status = receive_config_packet(socketfd, &packet);
-				if (config_packet_error_status != 0)
+				errorStatus = receiveConfigPacket(socketfd, &packet);
+				if (errorStatus != 0)
 				{
-					return config_packet_error_status;
+					return errorStatus;
 				}
 
-				int image_size = packet.image_width * packet.image_height;
-				unsigned int *image_buffer = new unsigned int[image_size]{0};
+				int imageSize = packet.imageWidth * packet.imageHeight;
+				unsigned int *imageBuffer = new unsigned int[imageSize] { 0 };
 
 				std::cout << "[MESSAGE]: Receiving image..." << std::endl;
-				int image_error_status = receive_image(socketfd, image_buffer, image_size);
-				if (image_error_status != 0)
+				errorStatus = receiveImage(socketfd, imageBuffer, imageSize);
+				if (errorStatus != 0)
 				{
-					return image_error_status;
+					delete[] imageBuffer;
+					return errorStatus;
 				}
 
 				std::cout << "[MESSAGE]: Fixing image endianess..." << std::endl;
-				little_to_big_endian(image_buffer, image_size);
+				littleToBigEndian(imageBuffer, imageSize);
 
 				std::cout << "[MESSAGE]: Saving image..." << std::endl;
-				if (!try_save_to_jpg(dir, packet.fullImageWidth, packet.fullImageHeight, image_buffer))
+				if (!trySaveToJpg(dir, packet.imageWidth, packet.imageHeight, imageBuffer, quality))
 				{
+					delete[] imageBuffer;
 					return -1;
 				}
+
+				delete[] imageBuffer;
 				std::cout << "[MESSAGE]: Done." << std::endl;
 			}
 		}
 		return 0;
 	}
 
-	int JpgReceiveSaveUtils::receive_config_packet(int socketfd, ConfigPacket *packet)
+	int JpgReceiveSaveUtils::receiveConfigPacket(int socketfd, ConfigPacket *packet)
 	{
-		int packet_bytes = recv(socketfd, packet, sizeof(ConfigPacket), 0);
+		int packetBytes = recv(socketfd, packet, sizeof(ConfigPacket), 0);
 
-		if (packet_bytes == -1)
+		if (packetBytes == -1)
 		{
 			std::cerr << "[ERROR]: Receiving ConfigPacket failed: " << std::strerror(errno) << std::endl;
 			return (int)errno;
 		}
-		else if (packet_bytes != sizeof(ConfigPacket))
+		else if (packetBytes != sizeof(ConfigPacket))
 		{
 			std::cout << "[WARNING]: ConfigPacket not fully received." << std::endl;
 		}
 		else
 		{
 			std::cout << "[MESSAGE]: ConfigPacket received with parameters: width = "
-				<< packet->image_width << " height = " << packet->image_height << std::endl;
+				<< packet->imageWidth << " height = " << packet->imageHeight << std::endl;
 		}
 
 		return 0;
 	}
 
-	int JpgReceiveSaveUtils::receive_image(int socketfd, unsigned int *image_buffer, const int image_size)
+	int JpgReceiveSaveUtils::receiveImage(int socketfd, unsigned int *imageBuffer, const int imageSize)
 	{
-		int image_size_in_bytes = image_size * sizeof(unsigned int);
-		unsigned char temp_buffer[image_size_in_bytes];
+		unsigned char* bufferPtr = (unsigned char*)imageBuffer;
 
-		int curr_recv_bytes = 0;
-		int last_byte_idx = 0;
+		int imageSizeInBytes = imageSize * sizeof(unsigned int);
+		int currRecvBytes = 0;
+		int lastByteIdx = 0;
 		while (true)
 		{
-			curr_recv_bytes = recv(socketfd, temp_buffer + last_byte_idx, image_size_in_bytes - last_byte_idx, 0);
-			if (curr_recv_bytes == -1)
+			currRecvBytes = recv(socketfd, bufferPtr + lastByteIdx, imageSizeInBytes - lastByteIdx, 0);
+			if (currRecvBytes == -1)
 			{
 				std::cerr << "[ERROR]: Receiving image failed: " << std::strerror(errno) << std::endl;
 				return (int)errno;
 			}
-			else if (curr_recv_bytes == 0)
+			else if (currRecvBytes == 0)
 			{
-				std::cout << "Nothing left to receive." << std::endl;
+				std::cout << "No bytes left to receive." << std::endl;
 				break;
 			}
 
-			last_byte_idx += curr_recv_bytes;
-			if (last_byte_idx > image_size_in_bytes)
+			lastByteIdx += currRecvBytes;
+			if (lastByteIdx > imageSizeInBytes)
 			{
 				std::cout << "[WARNING]: Byte index exceeded buffer size by "
-						  << image_size_in_bytes - last_byte_idx << " bytes." << std::endl;
+						  << imageSizeInBytes - lastByteIdx << " bytes." << std::endl;
 			}
 			else
 			{
-				std::cout << "[MESSAGE]: Received " << last_byte_idx << "/" << image_size_in_bytes
+				std::cout << "[MESSAGE]: Received " << lastByteIdx << "/" << imageSizeInBytes
 						  << " bytes..." << std::endl;
 			}
 		}
 
+		memcpy(imageBuffer, bufferPtr, imageSizeInBytes);
 		std::cout << "[MESSAGE]: Done." << std::endl;
-		memcpy(image_buffer, temp_buffer, image_size_in_bytes);
 
 		return 0;
 	}
 
-	unsigned int *JpgReceiveSaveUtils::little_to_big_endian(unsigned int *data, const int length)
+	unsigned int *JpgReceiveSaveUtils::littleToBigEndian(unsigned int *data, const int length)
 	{
 		for (int i = 0; i < length; i++)
 		{
@@ -146,7 +152,7 @@ namespace motion_detection
 		return data;
 	}
 
-	bool JpgReceiveSaveUtils::try_save_to_jpg(const char *dir, const int width, const int height, unsigned int *pixels)
+	bool JpgReceiveSaveUtils::trySaveToJpg(const char *dir, const int width, const int height, unsigned int *pixels, int quality)
 	{
 		time_t rawtime;
 		struct tm *timeinfo;
@@ -166,7 +172,7 @@ namespace motion_detection
 		strcat(destination, name);
 		strcat(destination, ".jpg");
 
-		if (stbi_write_jpg(destination, width, height, 4, pixels, 50) == 0)
+		if (stbi_write_jpg(destination, width, height, 4, pixels, quality) == 0)
 		{
 			std::cerr << "[ERROR]: Failed to save jpg file." << std::endl;
 			return false;

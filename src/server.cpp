@@ -13,5 +13,7 @@ int main(int argc, char **args)
 	}
 	ServerCommunication server; 
 	server.initServer(args[1]);
+
+	return 0;
 }
 

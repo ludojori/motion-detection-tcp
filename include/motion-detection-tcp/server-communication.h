@@ -22,7 +22,6 @@
 #include <netinet/in.h>
 
 #define MAX_CLIENTS 10
-#define IMAGE_SEGMENT_SIZE 100
 
 class ServerCommunication
 {
@@ -36,21 +35,25 @@ private:
     // std::mutex picChangeMutex; 
     // std::condition_variable picChangeCv;
 //  protected:
-
-public:
-    ServerCommunication();
     void registerClient(int sockID, uint64_t sensitivity);
     void disconnectClient(const int sockID, bool shouldCloseSocket);
-    void read_sensitivity(int sockID);
+    void readSensitivity(int sockID);
     bool isSocketConnected(int sockID);
     void sendPicture(int sockID, unsigned int *fullImage);
+    void sendConfigPacket(int sockID, ConfigPacket* packet);
+    void sendImage(int sockID, unsigned int *fullImage, int imageSize);
     void notifyClients(unsigned int *pixels, int pixelsCount);
     void checkConnectedClients();
     void changePic();
+
+public:
+    ServerCommunication();
+
     int initServer(char *port);
+
     ~ServerCommunication();
-  //  void operator=(const ServerCommunication &rhs) = delete;
-   // static ServerCommunication *getInstance();
+    // void operator=(const ServerCommunication &rhs) = delete;
+    // static ServerCommunication *getInstance();
 };
 
-#endif /*SERVER_COMMUNICATION_H*/
+#endif /* SERVER_COMMUNICATION_H */

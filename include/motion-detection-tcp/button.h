@@ -10,8 +10,6 @@
 
 #include <functional>
 
-
-
 class Button
 {
 private:
@@ -21,11 +19,14 @@ private:
 	//std::function<void()> onClick;
 	bool buttonAlive;
 	std::thread clickCheckThread;
+
 public:    
-    void checkClicked(std::function<void()> onClick);
     Button(std::function<void()> onClick);
-	~Button();
+
 	void operator=(Button& rhs) = delete;
+    void checkClicked(std::function<void()> onClick);
+
+	~Button();
 };
 
 
