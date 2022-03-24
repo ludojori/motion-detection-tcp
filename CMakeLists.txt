@@ -18,6 +18,9 @@ set(Headers
     include/motion_detection-tcp/image-processor.h
     include/motion_detection-tcp/jpg-receive-save-utils.h
     include/motion_detection-tcp/button.h
+    include/motion_detection-tcp/tcp-protocol.h
+    include/third-party/camera/camera.h
+    include/third-party/stb-image-write/stb-image-write.h
 )
 
 set(Sources
