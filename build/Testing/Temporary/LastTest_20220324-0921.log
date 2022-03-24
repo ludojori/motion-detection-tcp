@@ -1,0 +1,30 @@
+Start testing: Mar 24 11:21 FLE Standard Time
+----------------------------------------------------------
+1/1 Testing: ServerCommunicationTest.TRY
+1/1 Test: ServerCommunicationTest.TRY
+Command: "D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/Debug/hello_test.exe" "--gtest_filter=ServerCommunicationTest.TRY" "--gtest_also_run_disabled_tests"
+Directory: D:/Documents/Bosh C++ Camp/motion-detection-tcp/build
+"ServerCommunicationTest.TRY" start time: Mar 24 11:21 FLE Standard Time
+Output:
+----------------------------------------------------------
+Running main() from D:\Documents\Bosh C++ Camp\motion-detection-tcp\build\_deps\googletest-src\googletest\src\gtest_main.cc
+Note: Google Test filter = ServerCommunicationTest.TRY
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ServerCommunicationTest
+[ RUN      ] ServerCommunicationTest.TRY
+[       OK ] ServerCommunicationTest.TRY (0 ms)
+[----------] 1 test from ServerCommunicationTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"ServerCommunicationTest.TRY" end time: Mar 24 11:21 FLE Standard Time
+"ServerCommunicationTest.TRY" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Mar 24 11:21 FLE Standard Time

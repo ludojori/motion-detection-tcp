@@ -101,40 +101,6 @@ void ServerCommunication::
         std::cout << "[WARNING]: ConfigPacket not fully sent." << std::endl;
     }
 
-<<<<<<< Updated upstream
-	int image_size_in_bytes = sizeOfPicture * sizeof(unsigned int);
-	unsigned char temp_buffer[image_size_in_bytes];
-	memcpy(temp_buffer, fullImage, image_size_in_bytes);
-
-	int curr_sent_bytes = 0;
-	int last_byte_idx = 0;
-	while (true)
-	{
-		curr_sent_bytes = send(sockID, temp_buffer + last_byte_idx, image_size_in_bytes - last_byte_idx, 0);
-		if (curr_sent_bytes == -1)
-		{
-			std::cerr << "[ERROR]: Sending image failed: " << std::strerror(errno) << std::endl;
-			// TODO: exception handling
-		}
-		else if (curr_sent_bytes == 0)
-		{
-			std::cout << "[MESSAGE]: No bytes left to send." << std::endl;
-			break;
-		}
-
-		last_byte_idx += curr_sent_bytes;
-		if (last_byte_idx > image_size_in_bytes)
-		{
-			std::cout << "[WARNING]: Byte index exceeded buffer size by "
-					<< image_size_in_bytes - last_byte_idx << " bytes." << std::endl;
-		}
-		else
-		{
-			std::cout << "[MESSAGE]: Sent " << last_byte_idx << "/" << image_size_in_bytes
-					<< " bytes..." << std::endl;
-		}
-	}
-=======
     int image_size_in_bytes = sizeOfPicture * sizeof(unsigned int);
     unsigned char temp_buffer[image_size_in_bytes];
     memcpy(temp_buffer, fullImage, image_size_in_bytes);
@@ -167,7 +133,6 @@ void ServerCommunication::
                       << " bytes..." << std::endl;
         }
     }
->>>>>>> Stashed changes
 }
 
 void ServerCommunication::

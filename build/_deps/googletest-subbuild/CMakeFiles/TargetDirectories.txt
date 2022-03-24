@@ -1,0 +1,3 @@
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/googletest-populate.dir
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/ALL_BUILD.dir
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/ZERO_CHECK.dir
