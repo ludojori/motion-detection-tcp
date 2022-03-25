@@ -13,7 +13,7 @@ namespace motion_detection
 		bool trySaveToJpg(const char* dir, const int width, const int height, unsigned int* pixels, int quality);
 
 	public:
-		int receiveAndSave(int socketfd, const char* dir);
+		int receiveAndSave(int socketfd, const char* dir, int quality);
 	};
 }
 

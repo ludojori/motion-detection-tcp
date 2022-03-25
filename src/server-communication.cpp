@@ -1,7 +1,10 @@
 #include "../include/motion-detection-tcp/server-communication.h"
 #include "adafruit/bbio.h"
 
-using namespace motion_detection;
+#include <unistd.h>
+#include <netdb.h>
+#include <netinet/in.h>
+
 using namespace adafruit::bbio;
 
 void ServerCommunication::
@@ -88,7 +91,7 @@ void ServerCommunication::
     packet.imageHeight = height;
 
     sendConfigPacket(sockID, &packet);
-	sendImage(sockID, fullImage);
+	sendImage(sockID, fullImage, sizeOfPicture);
 
     std::cout << "[MESSAGE]: Done." << std::endl;
 }
@@ -113,7 +116,7 @@ void ServerCommunication::sendConfigPacket(int sockID, ConfigPacket* packet)
     }
 }
 
-void sendImage(int sockID, unsigned int* fullImage, int imageSize)
+void ServerCommunication::sendImage(int sockID, unsigned int* fullImage, int imageSize)
 {
     unsigned char* bufferPtr = (unsigned char*)fullImage;
 
@@ -145,6 +148,7 @@ void sendImage(int sockID, unsigned int* fullImage, int imageSize)
 			std::cout << "[MESSAGE]: Sent " << lastByteIdx << "/"
                 << imageSizeInBytes << " bytes..." << std::endl;
 		}
+	}
 }
 
 void ServerCommunication::

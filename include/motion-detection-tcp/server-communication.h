@@ -1,11 +1,9 @@
 #ifndef SERVER_COMMUNICATION_H
 #define SERVER_COMMUNICATION_H
 
-#include "../third-party/camera/camera.h"
 #include "tcp-protocol.h"
 #include "image-processor.h"
 #include "button.h"
-#include "adafruit/bbio.h"
 
 #include <iostream>
 #include <cstring>
@@ -17,9 +15,7 @@
 #include <queue>
 #include <unordered_map>
 
-#include <unistd.h>
-#include <netdb.h>
-#include <netinet/in.h>
+using namespace motion_detection;
 
 #define MAX_CLIENTS 10
 
