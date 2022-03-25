@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.14)
 
 set(This motion_detection)
 
@@ -14,11 +14,11 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 
 set(Headers
-    include/motion_detection-tcp/server-communication.h
-    include/motion_detection-tcp/image-processor.h
-    include/motion_detection-tcp/jpg-receive-save-utils.h
-    include/motion_detection-tcp/button.h
-    include/motion_detection-tcp/tcp-protocol.h
+    include/motion-detection-tcp/server-communication.h
+    include/motion-detection-tcp/image-processor.h
+    include/motion-detection-tcp/jpg-receive-save-utils.h
+    include/motion-detection-tcp/button.h
+    include/motion-detection-tcp/tcp-protocol.h
     include/third-party/camera/camera.h
     include/third-party/stb-image-write/stb-image-write.h
 )
@@ -43,15 +43,15 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(
-  hello_test
+  ServerCommunicationTest
   tests/ServerCommunicationTest.cpp
 )
 target_link_libraries(
-  hello_test
+  ServerCommunicationTest
   gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(hello_test)
+gtest_discover_tests(ServerCommunicationTest)
 
-add_executable(${This} ${Sources} ${Headers})
+# add_executable(${This} ${Sources} ${Headers})   

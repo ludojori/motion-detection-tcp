@@ -3,7 +3,6 @@
 
 #include "../third-party/camera/camera.h"
 #include "tcp-protocol.h"
-#include "adafruit/bbio.h"
 
 #include <iostream>
 #include <cstring>
@@ -19,7 +18,7 @@
 class ImageProcessor
 {
 private:
-    int oldPictureAverage;
+    uint64_t oldPictureAverage;
 
 public:
     uint64_t getAveragePixels(unsigned char *bytePixels, size_t arraySizeInBytes);
