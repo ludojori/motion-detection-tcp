@@ -1,0 +1,6 @@
+ServerCommunicationTest.TRY 6 0.0442364
+ServerCommunicationTest.getAveragePixelsTest 5 0.0259479
+ImageProcessorTest.calculatePictureDifferenceTest 0 0
+ServerCommunicationTest.calculatePictureDifferenceTest 18 0.0283451
+JpgReceiveSave.ReceiveConfigPacket 1 0.0893759
+---

@@ -1,0 +1,5 @@
+if(EXISTS "D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/ServerCommunicationTest[1]_tests.cmake")
+  include("D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/ServerCommunicationTest[1]_tests.cmake")
+else()
+  add_test(ServerCommunicationTest_NOT_BUILT ServerCommunicationTest_NOT_BUILT)
+endif()

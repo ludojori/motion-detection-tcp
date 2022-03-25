@@ -51,6 +51,9 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "condition_variable": "cpp",
-        "functional": "cpp"
-    }
+        "functional": "cpp",
+        "xlocmes": "cpp",
+        "*.rh": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "Enabled"
 }

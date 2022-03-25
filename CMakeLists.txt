@@ -43,15 +43,34 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(
+  ImageProcessorTest
+  tests/ImageProcessorTest.cpp
+)
+add_executable(
+  JpegReceiveTest
+  tests/JpegReceiveTest.cpp
+)
+add_executable(
   ServerCommunicationTest
   tests/ServerCommunicationTest.cpp
 )
 target_link_libraries(
+  ImageProcessorTest
+  gtest_main
+  gmock
+)
+target_link_libraries(
+  JpegReceiveTest
+  gtest_main
+  gmock
+)
+target_link_libraries(
   ServerCommunicationTest
   gtest_main
+  gmock
 )
 
 include(GoogleTest)
-gtest_discover_tests(ServerCommunicationTest)
+gtest_discover_tests(ImageProcessorTest)
 
-# add_executable(${This} ${Sources} ${Headers})   
+ # add_executable(${This} ${Sources} ${Headers})   

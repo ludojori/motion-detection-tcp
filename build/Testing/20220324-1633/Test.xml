@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20220324-1633-Experimental"
+	Name="(empty)"
+	Generator="ctest-3.22.1"
+	CompilerName=""
+	CompilerVersion=""
+	OSName="Windows"
+	Hostname="VLADI-PC"
+	OSRelease=" Professional"
+	OSVersion=" (Build 19042)"
+	OSPlatform="AMD64"
+	Is64Bits="1"
+	VendorString="AuthenticAMD"
+	VendorID="Advanced Micro Devices"
+	FamilyID="15"
+	ModelID="8"
+	ProcessorCacheSize="96"
+	NumberOfLogicalCPU="4"
+	NumberOfPhysicalCPU="4"
+	TotalVirtualMemory="25977"
+	TotalPhysicalMemory="16315"
+	LogicalProcessorsPerPhysical="1"
+	ProcessorClockFrequency="3593"
+	>
+	<Testing>
+		<StartDateTime>Mar 25 01:58 FLE Standard Time</StartDateTime>
+		<StartTestTime>1648166337</StartTestTime>
+		<TestList>
+			<Test>./ServerCommunicationTest.TRY</Test>
+		</TestList>
+		<Test Status="failed">
+			<Name>ServerCommunicationTest.TRY</Name>
+			<Path>.</Path>
+			<FullName>./ServerCommunicationTest.TRY</FullName>
+			<FullCommandLine>"D:\Documents\Bosh C++ Camp\motion-detection-tcp\build\Debug\ServerCommunicationTest.exe" "--gtest_filter=ServerCommunicationTest.TRY" "--gtest_also_run_disabled_tests"</FullCommandLine>
+			<Results>
+				<NamedMeasurement type="text/string" name="Exit Code">
+					<Value>Failed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Exit Value">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Execution Time">
+					<Value>0.0194377</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Processors">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Completion Status">
+					<Value>Completed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Command Line">
+					<Value>"D:\Documents\Bosh C++ Camp\motion-detection-tcp\build\Debug\ServerCommunicationTest.exe" "--gtest_filter=ServerCommunicationTest.TRY" "--gtest_also_run_disabled_tests"</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Environment">
+					<Value>#CTEST_RESOURCE_GROUP_COUNT=</Value>
+				</NamedMeasurement>
+				<Measurement>
+					<Value encoding="base64" compression="gzip">eJyVUsFqGzEQvesr5miT7BJfQlnIwbHdECgh2C6leE2QteO1QNJsNZKT9OsrrU2IC26TgYWR5s2b92Y1j85p14KV2g2GsPVkYVrVU1LRogtc3xLvYHJxARNpu9pS0OSKBgOqPguqqzdRm6Z+arDjuiVqTapyKNird8e6P+bsKc8qlRIPFLCCux4Cy1SBrTYBPdzAAv0e/YSsjU4rmUdlQLmc/xSrm7dYw/yofwShJ8j6jzlHHbAUq+It1nBnaCPNoY5urz25bBMYQxG7v8DvOc8IEiuYf3+APtb/VM3RVnB9LT673CyB63PMqusGoy/DCtB78hXMXrrUiw3gryiNDq9AWwg7ZIS9NBG5EgCj9HWeFDKTL1sM48QtW3zUL2h4sHkNx/QSWP/Ge3ebbngosskfO612oLmCq+Qdvo7vv82m//EOgxHY1P/Z5R76IFCQZig+9iMDSl809OxOn8m55wFeuvJ0TnL1OF4sDq6ueiyXp14PDJdgNOddb9DQc/XhdQiRCI7I5WyxFH8ATyEsRg==</Value>
+				</Measurement>
+			</Results>
+		</Test>
+		<EndDateTime>Mar 25 01:58 FLE Standard Time</EndDateTime>
+		<EndTestTime>1648166337</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>

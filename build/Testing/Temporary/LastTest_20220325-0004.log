@@ -1,0 +1,63 @@
+Start testing: Mar 25 19:06 FLE Standard Time
+----------------------------------------------------------
+2/2 Testing: ServerCommunicationTest.calculatePictureDifferenceTest
+2/2 Test: ServerCommunicationTest.calculatePictureDifferenceTest
+Command: "D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/Debug/ImageProcessorTest.exe" "--gtest_filter=ServerCommunicationTest.calculatePictureDifferenceTest" "--gtest_also_run_disabled_tests"
+Directory: D:/Documents/Bosh C++ Camp/motion-detection-tcp/build
+"ServerCommunicationTest.calculatePictureDifferenceTest" start time: Mar 25 19:06 FLE Standard Time
+Output:
+----------------------------------------------------------
+Running main() from D:\Documents\Bosh C++ Camp\motion-detection-tcp\build\_deps\googletest-src\googletest\src\gtest_main.cc
+Note: Google Test filter = ServerCommunicationTest.calculatePictureDifferenceTest
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ServerCommunicationTest
+[ RUN      ] ServerCommunicationTest.calculatePictureDifferenceTest
+sum: 66
+[MESSAGE]: Difference: 0
+sum: 66
+sum: 66
+[MESSAGE]: Difference: 0
+[       OK ] ServerCommunicationTest.calculatePictureDifferenceTest (0 ms)
+[----------] 1 test from ServerCommunicationTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"ServerCommunicationTest.calculatePictureDifferenceTest" end time: Mar 25 19:06 FLE Standard Time
+"ServerCommunicationTest.calculatePictureDifferenceTest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+1/2 Testing: ServerCommunicationTest.getAveragePixelsTest
+1/2 Test: ServerCommunicationTest.getAveragePixelsTest
+Command: "D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/Debug/ImageProcessorTest.exe" "--gtest_filter=ServerCommunicationTest.getAveragePixelsTest" "--gtest_also_run_disabled_tests"
+Directory: D:/Documents/Bosh C++ Camp/motion-detection-tcp/build
+"ServerCommunicationTest.getAveragePixelsTest" start time: Mar 25 19:06 FLE Standard Time
+Output:
+----------------------------------------------------------
+Running main() from D:\Documents\Bosh C++ Camp\motion-detection-tcp\build\_deps\googletest-src\googletest\src\gtest_main.cc
+Note: Google Test filter = ServerCommunicationTest.getAveragePixelsTest
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ServerCommunicationTest
+[ RUN      ] ServerCommunicationTest.getAveragePixelsTest
+sum: 66
+[       OK ] ServerCommunicationTest.getAveragePixelsTest (0 ms)
+[----------] 1 test from ServerCommunicationTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (0 ms total)
+[  PASSED  ] 1 test.
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"ServerCommunicationTest.getAveragePixelsTest" end time: Mar 25 19:06 FLE Standard Time
+"ServerCommunicationTest.getAveragePixelsTest" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Mar 25 19:06 FLE Standard Time

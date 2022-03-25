@@ -1,0 +1,39 @@
+Start testing: Mar 25 01:58 FLE Standard Time
+----------------------------------------------------------
+1/1 Testing: ServerCommunicationTest.TRY
+1/1 Test: ServerCommunicationTest.TRY
+Command: "D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/Debug/ServerCommunicationTest.exe" "--gtest_filter=ServerCommunicationTest.TRY" "--gtest_also_run_disabled_tests"
+Directory: D:/Documents/Bosh C++ Camp/motion-detection-tcp/build
+"ServerCommunicationTest.TRY" start time: Mar 25 01:58 FLE Standard Time
+Output:
+----------------------------------------------------------
+Running main() from D:\Documents\Bosh C++ Camp\motion-detection-tcp\build\_deps\googletest-src\googletest\src\gtest_main.cc
+Note: Google Test filter = ServerCommunicationTest.TRY
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from ServerCommunicationTest
+[ RUN      ] ServerCommunicationTest.TRY
+sum: 66
+D:\Documents\Bosh C++ Camp\motion-detection-tcp\tests\ServerCommunicationTest.cpp(18): error: Expected equality of these values:
+  1
+  processor.getAveragePixels(bytePixels, sizeInBytes)
+    Which is: 0
+[  FAILED  ] ServerCommunicationTest.TRY (1 ms)
+[----------] 1 test from ServerCommunicationTest (1 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (1 ms total)
+[  PASSED  ] 0 tests.
+[  FAILED  ] 1 test, listed below:
+[  FAILED  ] ServerCommunicationTest.TRY
+
+ 1 FAILED TEST
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Failed.
+"ServerCommunicationTest.TRY" end time: Mar 25 01:58 FLE Standard Time
+"ServerCommunicationTest.TRY" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Mar 25 01:58 FLE Standard Time

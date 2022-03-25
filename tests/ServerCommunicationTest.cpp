@@ -1,43 +1,120 @@
 #include <gtest/gtest.h>
-#include "D:/Documents/Bosh C++ Camp/motion-detection-tcp/src/image-processor.cpp"
+#include "../src/server-communication.cpp"
+#include "StubSendRecvLogic.hpp"
+#include "MockSendRecv.h"
+#include "MockButton.h"
 
-TEST(ServerCommunicationTest, TRY)
+class ServerCommunicationTestClass
 {
-    ImageProcessor processor;
-    int pixelsCount = 100;
-    unsigned int *pixels = new unsigned int[pixelsCount];
-    for (size_t i = 0; i < pixelsCount; i++)
-    {
-        pixels[i] = 1;
-    }
 
-    size_t sizeInBytes = pixelsCount * sizeof(int);
-    // byte conversion
-    unsigned char *bytePixels = new unsigned char[pixelsCount * 4];
-    bytePixels = (unsigned char *)pixels;
-    EXPECT_EQ(0, processor.getAveragePixels(bytePixels, sizeInBytes)) << "Average pixels were not calculated correctly";
-    //delete[] bytePixels;
-    delete[] pixels;
+public:
+    ServerCommunication *serverCommunication;
+
+    void registerClient(int sockID, uint64_t sensitivity)
+    {
+        serverCommunication->registerClient(sockID, sensitivity);
+    }
+    void disconnectClient(const int sockID, bool shouldCloseSocket)
+    {
+        serverCommunication->disconnectClient(sockID, shouldCloseSocket);
+    }
+    void readSensitivity(int sockID)
+    {
+        serverCommunication->readSensitivity(sockID);
+    }
+    bool isSocketConnected(int sockID)
+    {
+        return serverCommunication->isSocketConnected(sockID);
+    }
+    void sendPicture(int sockID, unsigned int *fullImage)
+    {
+        serverCommunication->sendPicture(sockID, fullImage);
+    }
+    void sendConfigPacket(int sockID, ConfigPacket *packet)
+    {
+        serverCommunication->sendConfigPacket(sockID, packet);
+    }
+    void sendImage(int sockID, unsigned int *fullImage, int imageSize)
+    {
+        serverCommunication->sendImage(sockID, fullImage, imageSize);
+    }
+    void notifyClients(unsigned int *pixels, int pixelsCount)
+    {
+        serverCommunication->notifyClients(pixels, pixelsCount);
+    }
+    void checkConnectedClients()
+    {
+        serverCommunication->checkConnectedClients();
+    }
+    void changePic()
+    {
+        serverCommunication->changePic();
+    }
+    int getMapSize()
+    {
+        return serverCommunication->sockIDSensitivity.size();
+    }
+};
+
+TEST(ServerCommunicationTest, registerClientTest)
+{
+
+    MockSendRecvLogic communication;
+    MockButton mockedButton([]()
+                            { return; });
+    ServerCommunicationTestClass testClass;
+    ServerCommunication server(communication, mockedButton);
+    testClass.serverCommunication = &server;
+    int sockID = 42;
+    uint64_t sensitivity = 123;
+
+    testClass.registerClient(sockID, sensitivity);
+    EXPECT_EQ(1, testClass.getMapSize()) << "After regisering client the size should be increased!";
 }
 
-TEST(ServerCommunicationTest, calculatePictureDifferenceTest)
+TEST(ServerCommunicationTest, disconnectClientTest)
 {
-    ImageProcessor processor;
-    int pixelsCount = 100;
-    unsigned int *pixels = new unsigned int[pixelsCount];
-    for (size_t i = 0; i < pixelsCount; i++)
-    {
-        pixels[i] = 1;//0001 0001 0001 ..... 0001 0001 //100 times
-    }
 
-    size_t sizeInBytes = pixelsCount * sizeof(int);
-    // byte conversion
-    unsigned char *bytePixels = new unsigned char[pixelsCount * 4];
-    bytePixels = (unsigned char *)pixels;
-    EXPECT_EQ(processor.getAveragePixels(bytePixels, sizeInBytes), processor.calculatePictureDifference(bytePixels, sizeInBytes)) <<
-     "When the first picture is shown it's average is the difference";
-    EXPECT_EQ(0, processor.calculatePictureDifference(bytePixels, sizeInBytes)) <<
-     "The difference between same pictures should be 0";
-    delete[] pixels; 
-   // delete[] bytePixels;
+    MockSendRecvLogic communication;
+    MockButton mockedButton([]()
+                            { return; });
+    ServerCommunicationTestClass testClass;
+    ServerCommunication server(communication, mockedButton);
+    testClass.serverCommunication = &server;
+    int sockID = 42;
+    uint64_t sensitivity = 123;
+
+    testClass.registerClient(sockID, sensitivity);
+    testClass.disconnectClient(sockID, true);
+    EXPECT_CALL(communication, close(sockID)) << "Should close when disconnect is called with flag up";
+}
+TEST(ServerCommunicationTest, readSensitivityTest)
+{
+
+    MockSendRecvLogic communication;
+    MockButton mockedButton([]()
+                            { return; });
+    ServerCommunicationTestClass testClass;
+    ServerCommunication server(communication, mockedButton);
+    testClass.serverCommunication = &server;
+    int sockID = 42;
+    uint64_t sensitivity = 123;
+
+    testClass.readSensitivity(sockID);
+    EXPECT_CALL(communication, localReceive(sockID, (_), (_), 0)).Times(AtLeast(1)) << "Should call recv when run read sens";
+}
+TEST(ServerCommunicationTest, readSensitivityTest)
+{
+
+    MockSendRecvLogic communication;
+    MockButton mockedButton([]()
+                            { return; });
+    ServerCommunicationTestClass testClass;
+    ServerCommunication server(communication, mockedButton);
+    testClass.serverCommunication = &server;
+    int sockID = 42;
+    uint64_t sensitivity = 123;
+
+    testClass.readSensitivity(sockID);
+    EXPECT_CALL(communication, localReceive(sockId, _, _, 0)).Times(AtLeast(1)) << "Should call recv when run read sens";
 }

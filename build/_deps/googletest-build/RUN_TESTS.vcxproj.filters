@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Documents\Bosh C++ Camp\motion-detection-tcp\build\CMakeFiles\972798fe17f73045e98d9535ef4c3e67\RUN_TESTS_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{41746229-1EB5-3DA3-8B6B-D8AA894E8FF2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

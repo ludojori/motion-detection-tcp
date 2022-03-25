@@ -1,8 +1,7 @@
 #include "../include/motion-detection-tcp/server-communication.h"
-#include "adafruit/bbio.h"
+#pragma warning(disable : 4996)
 
 using namespace motion_detection;
-using namespace adafruit::bbio;
 
 void ServerCommunication::
     registerClient(int sockID, uint64_t sensitivity)
@@ -20,7 +19,7 @@ void ServerCommunication::
     sockIDSensitivity.erase(sockID);
     if (shouldCloseSocket)
     {
-        close(sockID);
+        communication->close(sockID);
     }
     std::cout << "[MESSAGE]: A client has disconnected. Remaining clients: " << sockIDSensitivity.size() << std::endl;
 }
@@ -30,7 +29,7 @@ void ServerCommunication::
 {
     uint64_t sens;
     const int SENSITIVITY_LENGTH = sizeof(uint64_t);
-    int sens_bytes = recv(sockID, &sens, SENSITIVITY_LENGTH, 0);
+    int sens_bytes = communication->localReceive(sockID, &sens, SENSITIVITY_LENGTH, 0);
 
     if (sens_bytes == -1)
     {
@@ -52,9 +51,9 @@ void ServerCommunication::
 bool ServerCommunication::
     isSocketConnected(int sockID)
 {
+
     int error = 0;
-    socklen_t len = sizeof(error);
-    int retval = getsockopt(sockID, SOL_SOCKET, SO_ERROR, &error, &len);
+    int retval = communication->getSockOptCheck(sockID, error);
 
     if (retval == 0 && error != 0)
     {
@@ -73,7 +72,7 @@ void ServerCommunication::
     int sizeOfPicture = height * width;
 
     char statusByte = static_cast<char>(Status::MOTION_DETECTED);
-    if (send(sockID, &statusByte, 1, 0) == -1)
+    if (communication->localSend(sockID, &statusByte, 1, 0) == -1)
     {
         std::cerr << "[ERROR]: Sending status byte failed: " << std::strerror(errno) << std::endl;
     }
@@ -88,17 +87,17 @@ void ServerCommunication::
     packet.imageHeight = height;
 
     sendConfigPacket(sockID, &packet);
-	sendImage(sockID, fullImage);
+    sendImage(sockID, fullImage, width * height);
 
     std::cout << "[MESSAGE]: Done." << std::endl;
 }
 
-void ServerCommunication::sendConfigPacket(int sockID, ConfigPacket* packet)
+void ServerCommunication::sendConfigPacket(int sockID, ConfigPacket *packet)
 {
     std::cout << "[MESSAGE]: Sending ConfigPacket with parameters: width = "
-        << packet->imageWidth << " height = " << packet->imageHeight << " ..." << std::endl;
+              << packet->imageWidth << " height = " << packet->imageHeight << " ..." << std::endl;
 
-    int packet_bytes = send(sockID, packet, sizeof(ConfigPacket), 0);
+    int packet_bytes = communication->localSend(sockID, packet, sizeof(ConfigPacket), 0);
     if (packet_bytes == -1)
     {
         std::cerr << "[ERROR]: Sending ConfigPacket failed: " << std::strerror(errno) << std::endl;
@@ -113,38 +112,39 @@ void ServerCommunication::sendConfigPacket(int sockID, ConfigPacket* packet)
     }
 }
 
-void sendImage(int sockID, unsigned int* fullImage, int imageSize)
+void ServerCommunication::sendImage(int sockID, unsigned int *fullImage, int imageSize)
 {
-    unsigned char* bufferPtr = (unsigned char*)fullImage;
+    unsigned char *bufferPtr = (unsigned char *)fullImage;
 
-	int imageSizeInBytes = imageSize * sizeof(unsigned int);
-	int currSentBytes = 0;
-	int lastByteIdx = 0;
-	while (true)
-	{
-		currSentBytes = send(sockID, bufferPtr + lastByteIdx, imageSizeInBytes - lastByteIdx, 0);
-		if (currSentBytes == -1)
-		{
-			std::cerr << "[ERROR]: Sending image failed: " << std::strerror(errno) << std::endl;
-			// TODO: exception handling
-		}
-		else if (currSentBytes == 0)
-		{
-			std::cout << "[MESSAGE]: No bytes left to send." << std::endl;
-			break;
-		}
+    int imageSizeInBytes = imageSize * sizeof(unsigned int);
+    int currSentBytes = 0;
+    int lastByteIdx = 0;
+    while (true)
+    {
+        currSentBytes = communication->localSend(sockID, bufferPtr + lastByteIdx, imageSizeInBytes - lastByteIdx, 0);
+        if (currSentBytes == -1)
+        {
+            std::cerr << "[ERROR]: Sending image failed: " << std::strerror(errno) << std::endl;
+            // TODO: exception handling
+        }
+        else if (currSentBytes == 0)
+        {
+            std::cout << "[MESSAGE]: No bytes left to send." << std::endl;
+            break;
+        }
 
-		lastByteIdx += currSentBytes;
-		if (lastByteIdx > imageSizeInBytes)
-		{
-			std::cout << "[WARNING]: Byte index exceeded buffer size by "
-					<< imageSizeInBytes - lastByteIdx << " bytes." << std::endl;
-		}
-		else
-		{
-			std::cout << "[MESSAGE]: Sent " << lastByteIdx << "/"
-                << imageSizeInBytes << " bytes..." << std::endl;
-		}
+        lastByteIdx += currSentBytes;
+        if (lastByteIdx > imageSizeInBytes)
+        {
+            std::cout << "[WARNING]: Byte index exceeded buffer size by "
+                      << imageSizeInBytes - lastByteIdx << " bytes." << std::endl;
+        }
+        else
+        {
+            std::cout << "[MESSAGE]: Sent " << lastByteIdx << "/"
+                      << imageSizeInBytes << " bytes..." << std::endl;
+        }
+    }
 }
 
 void ServerCommunication::
@@ -182,7 +182,7 @@ void ServerCommunication::
         for (auto &i : sockIDSensitivity)
         {
             char statusByte = static_cast<char>(Status::STILL_IMAGE);
-            if (send(i.first, &statusByte, 1, 0) == -1)
+            if (communication->localSend(i.first, &statusByte, 1, 0) == -1)
             {
                 std::cerr << "[ERROR]: Sending status byte failed: " << std::strerror(errno) << std::endl;
                 disconnectClient(i.first, true);
@@ -221,60 +221,7 @@ void ServerCommunication::
 int ServerCommunication::
     initServer(char *port)
 {
-    int sockID = 0;
-
-    int listener = socket(PF_INET, SOCK_STREAM, 0);
-    if (listener == -1)
-    {
-        std::cerr << "[ERROR]: Function socket() failed: " << std::strerror(errno) << std::endl;
-    }
-
-    sockaddr_in serverAddr;
-    memset(&serverAddr, 0, sizeof(serverAddr));
-
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons((u_short)strtoul(port, NULL, 0));
-    serverAddr.sin_addr.s_addr = INADDR_ANY;
-
-    if (bind(listener, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1)
-    {
-        std::cerr << "[ERROR]: Function bind() failed: " << std::strerror(errno) << std::endl;
-    }
-    if (listen(listener, 110) != 0)
-    {
-        std::cerr << "[ERROR]: Function listen() failed: " << std::strerror(errno) << std::endl;
-    }
-
-    std::vector<std::thread> threads;
-    // std::thread change_pic_thread(&button.changePic, &button, pixels, picChangeMutex, picChangeCv);
-    // std::thread notify_click_thread(&ServerCommunication::changePic, this);
-    std::thread check_connected_clients_thread(&ServerCommunication::checkConnectedClients, this);
-
-    // may be in separate function
-    while (true)
-    {
-        if (sockIDSensitivity.size() >= MAX_CLIENTS)
-        {
-            continue;
-            // wait until disconnect
-        }
-        std::cout << "[MESSAGE]: Listening..." << std::endl;
-        sockaddr_in cliAddr;
-        socklen_t len = sizeof(cliAddr);
-        sockID = accept(listener, (struct sockaddr *)&cliAddr, &len);
-
-        if (sockID == -1)
-        {
-            std::cerr << "[ERROR]: Function accept() failed: " << std::strerror(errno) << std::endl;
-            return (int)errno;
-        }
-        std::cout << "[MESSAGE]: Connection accepted. SockID: " << sockID << std::endl;
-        // TODO: sync
-        threads.emplace_back(&ServerCommunication::readSensitivity, this, sockID);
-        std::cout << "[MESSAGE]: Number of connections accepted: " << sockIDSensitivity.size() << std::endl;
-    }
-    // change_pic_thread.join();
-    check_connected_clients_thread.join();
+    return communication->initServer(port);
 }
 
 // ServerCommunication* ServerCommunication::
@@ -295,8 +242,15 @@ ServerCommunication::~ServerCommunication()
     }
 }
 
-ServerCommunication::ServerCommunication() : button([this]()
-                                                    { this->changePic(); }),
-                                             pixels(nullptr)
+ServerCommunication::ServerCommunication(SendReceiveInterface &communication) : pixels(nullptr)
 {
+    this->button = &Button([this]()
+                           { this->changePic(); });
+    this->communication = &communication;
+}
+
+ServerCommunication::ServerCommunication(SendReceiveInterface &communication, Button &button) : pixels(nullptr)
+{
+    this->button = &button;
+    this->communication = &communication;
 }

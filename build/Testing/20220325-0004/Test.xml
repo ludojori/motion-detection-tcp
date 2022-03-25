@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20220325-0004-Experimental"
+	Name="(empty)"
+	Generator="ctest-3.22.1"
+	CompilerName=""
+	CompilerVersion=""
+	OSName="Windows"
+	Hostname="VLADI-PC"
+	OSRelease=" Professional"
+	OSVersion=" (Build 19042)"
+	OSPlatform="AMD64"
+	Is64Bits="1"
+	VendorString="AuthenticAMD"
+	VendorID="Advanced Micro Devices"
+	FamilyID="15"
+	ModelID="8"
+	ProcessorCacheSize="96"
+	NumberOfLogicalCPU="4"
+	NumberOfPhysicalCPU="4"
+	TotalVirtualMemory="23463"
+	TotalPhysicalMemory="16315"
+	LogicalProcessorsPerPhysical="1"
+	ProcessorClockFrequency="3594"
+	>
+	<Testing>
+		<StartDateTime>Mar 25 19:06 FLE Standard Time</StartDateTime>
+		<StartTestTime>1648227964</StartTestTime>
+		<TestList>
+			<Test>./ServerCommunicationTest.calculatePictureDifferenceTest</Test>
+			<Test>./ServerCommunicationTest.getAveragePixelsTest</Test>
+		</TestList>
+		<Test Status="passed">
+			<Name>ServerCommunicationTest.calculatePictureDifferenceTest</Name>
+			<Path>.</Path>
+			<FullName>./ServerCommunicationTest.calculatePictureDifferenceTest</FullName>
+			<FullCommandLine>"D:\Documents\Bosh C++ Camp\motion-detection-tcp\build\Debug\ImageProcessorTest.exe" "--gtest_filter=ServerCommunicationTest.calculatePictureDifferenceTest" "--gtest_also_run_disabled_tests"</FullCommandLine>
+			<Results>
+				<NamedMeasurement type="numeric/double" name="Execution Time">
+					<Value>0.0256227</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Processors">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Completion Status">
+					<Value>Completed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Command Line">
+					<Value>"D:\Documents\Bosh C++ Camp\motion-detection-tcp\build\Debug\ImageProcessorTest.exe" "--gtest_filter=ServerCommunicationTest.calculatePictureDifferenceTest" "--gtest_also_run_disabled_tests"</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Environment">
+					<Value>#CTEST_RESOURCE_GROUP_COUNT=</Value>
+				</NamedMeasurement>
+				<Measurement>
+					<Value encoding="base64" compression="gzip">eJydUU1rwkAQvedXzFGRBL14CHiwRjyUWjHtKQmybiZ2YT/C7qz9+3UTsbYgts5phvfm473Zeq2FPoBiQg+G0FijIEvLzHCvUJMrn4z7gMVoBAum2lIZEkbHNRLyLiPelnsvZF3uamxdeTDmIE+oo9hZflWWXRmyXdiVcB6tDWEKq44CbycEGiEJLcwgR3tEuzBKeS04C6sCIeFMci8Z4UZw8hYz0TRoUXMMcFTMLlHB9ixtAtTNDtLOufOCMImK+BIVrKTZM9njqI/CGh0cAIcU+/YX+XrmjVujArbva+iielSQ8yqF6TQqXpZ5Pl8tqxS+GSmML4S7xKK/BF6fH74GBmNQbvhvJ/o+IENMDqO/uU7IbFybT/3zp7d+CZbpBAaTqz0nwZt5ni+zYH/PTaIvLHP8gQ==</Value>
+				</Measurement>
+			</Results>
+		</Test>
+		<Test Status="passed">
+			<Name>ServerCommunicationTest.getAveragePixelsTest</Name>
+			<Path>.</Path>
+			<FullName>./ServerCommunicationTest.getAveragePixelsTest</FullName>
+			<FullCommandLine>"D:\Documents\Bosh C++ Camp\motion-detection-tcp\build\Debug\ImageProcessorTest.exe" "--gtest_filter=ServerCommunicationTest.getAveragePixelsTest" "--gtest_also_run_disabled_tests"</FullCommandLine>
+			<Results>
+				<NamedMeasurement type="numeric/double" name="Execution Time">
+					<Value>0.0227741</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Processors">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Completion Status">
+					<Value>Completed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Command Line">
+					<Value>"D:\Documents\Bosh C++ Camp\motion-detection-tcp\build\Debug\ImageProcessorTest.exe" "--gtest_filter=ServerCommunicationTest.getAveragePixelsTest" "--gtest_also_run_disabled_tests"</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Environment">
+					<Value>#CTEST_RESOURCE_GROUP_COUNT=</Value>
+				</NamedMeasurement>
+				<Measurement>
+					<Value encoding="base64" compression="gzip">eJyVUMFqAjEQve9XzFGRXdqLB8GDdYuHghVtT0YkZsdtIMksycT287vZFdGCUOc0k/fyZt5bR+e0q8FK7QZDOHqyUE5ESSpadBzEC4UvmI9GMJe2EZZYk8srZFRdx6oRh6hNJfYVNkHURLVp0cB58OpqFN2Yun3aVSiVLYlxAouOAh8tAkdtGD1MYYP+hH5O1kanlUyrEqGokWctIGtc6R80IT1m2+mldrA+G3oG7hSToXMfomYssm1+qR0sDB2k6XF0J+3JJd8QkPPY/CFfa965MNvC+nMJXe0esxGincB43Cr09f72oAIMnsCG4cM39/+AiaUZZv/Lh1H6vKJvd5v+vdTBS1fc7mltrmabzWuZguq5RfYLZWLc+w==</Value>
+				</Measurement>
+			</Results>
+		</Test>
+		<EndDateTime>Mar 25 19:06 FLE Standard Time</EndDateTime>
+		<EndTestTime>1648227964</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>

@@ -1,4 +1,5 @@
 #include "../include/motion-detection-tcp/server-communication.h"
+#include "../include/motion-detection-tcp/linux-send-receive.hpp"
 
 int main(int argc, char **args)
 {
@@ -7,9 +8,9 @@ int main(int argc, char **args)
 		std::cerr << "[ERROR]: Missing parameter [port]. Exiting." << std::endl;
 		return -1;
 	}
-	ServerCommunication server; 
+	LinuxSendReceive communication;
+	ServerCommunication server(communication); //default button constr
 	server.initServer(args[1]);
 
 	return 0;
 }
-

@@ -20,7 +20,7 @@
 
 namespace motion_detection
 {
-	int JpgReceiveSaveUtils::receiveAndSave(int socketfd, const char *dir, int quality)
+	int JpgReceiveSaveUtils::receiveAndSave(int socketfd, const char *dir, int quality) override
 	{
 		int errorStatus = 0;
 		char statusByte = ' ';
@@ -81,7 +81,7 @@ namespace motion_detection
 		return 0;
 	}
 
-	int JpgReceiveSaveUtils::receiveConfigPacket(int socketfd, ConfigPacket *packet)
+	int JpgReceiveSaveUtils::receiveConfigPacket(int socketfd, ConfigPacket *packet) override
 	{
 		int packetBytes = recv(socketfd, packet, sizeof(ConfigPacket), 0);
 
@@ -103,7 +103,7 @@ namespace motion_detection
 		return 0;
 	}
 
-	int JpgReceiveSaveUtils::receiveImage(int socketfd, unsigned int *imageBuffer, const int imageSize)
+	int JpgReceiveSaveUtils::receiveImage(int socketfd, unsigned int *imageBuffer, const int imageSize) override
 	{
 		unsigned char* bufferPtr = (unsigned char*)imageBuffer;
 
@@ -143,7 +143,7 @@ namespace motion_detection
 		return 0;
 	}
 
-	unsigned int *JpgReceiveSaveUtils::littleToBigEndian(unsigned int *data, const int length)
+	unsigned int *JpgReceiveSaveUtils::littleToBigEndian(unsigned int *data, const int length) override
 	{
 		for (int i = 0; i < length; i++)
 		{
@@ -152,7 +152,7 @@ namespace motion_detection
 		return data;
 	}
 
-	bool JpgReceiveSaveUtils::trySaveToJpg(const char *dir, const int width, const int height, unsigned int *pixels, int quality)
+	bool JpgReceiveSaveUtils::trySaveToJpg(const char *dir, const int width, const int height, unsigned int *pixels, int quality) override
 	{
 		time_t rawtime;
 		struct tm *timeinfo;
