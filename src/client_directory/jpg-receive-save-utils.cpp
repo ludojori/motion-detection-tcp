@@ -71,9 +71,12 @@ namespace motion_detection
 				{
 					return -1;
 				}
+<<<<<<< HEAD
 				
 				delete[] image_buffer;
 
+=======
+>>>>>>> dd00e90a4bead35404aa78577f45065dfff9ac9c
 				std::cout << "[MESSAGE]: Done." << std::endl;
 			}
 		}
@@ -107,7 +110,11 @@ namespace motion_detection
 	int JpgReceiveSaveUtils::receive_image(int socketfd, unsigned int *image_buffer, const int image_size)
 	{
 		int image_size_in_bytes = image_size * sizeof(unsigned int);
+<<<<<<< HEAD
 		unsigned char* temp_buffer = (unsigned char*)image_buffer;
+=======
+		unsigned char temp_buffer[image_size_in_bytes];
+>>>>>>> dd00e90a4bead35404aa78577f45065dfff9ac9c
 
 		int curr_recv_bytes = 0;
 		int last_byte_idx = 0;
@@ -139,6 +146,10 @@ namespace motion_detection
 		}
 
 		std::cout << "[MESSAGE]: Done." << std::endl;
+<<<<<<< HEAD
+=======
+		memcpy(image_buffer, temp_buffer, image_size_in_bytes);
+>>>>>>> dd00e90a4bead35404aa78577f45065dfff9ac9c
 
 		return 0;
 	}

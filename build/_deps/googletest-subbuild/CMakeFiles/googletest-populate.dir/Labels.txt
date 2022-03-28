@@ -1,0 +1,14 @@
+# Target labels
+ googletest-populate
+# Source files and their labels
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/googletest-populate
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/95470287ee7953278eec6837ad7e975f/googletest-populate.rule
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/bc7e5906a57a31b506dbde5f774f3140/googletest-populate-complete.rule
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/978b04aedec99493296a6ffdf9919f1c/googletest-populate-build.rule
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/978b04aedec99493296a6ffdf9919f1c/googletest-populate-configure.rule
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/978b04aedec99493296a6ffdf9919f1c/googletest-populate-download.rule
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/978b04aedec99493296a6ffdf9919f1c/googletest-populate-install.rule
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/978b04aedec99493296a6ffdf9919f1c/googletest-populate-mkdir.rule
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/978b04aedec99493296a6ffdf9919f1c/googletest-populate-patch.rule
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/978b04aedec99493296a6ffdf9919f1c/googletest-populate-test.rule
+D:/Documents/Bosh C++ Camp/motion-detection-tcp/build/_deps/googletest-subbuild/CMakeFiles/978b04aedec99493296a6ffdf9919f1c/googletest-populate-update.rule

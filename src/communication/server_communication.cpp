@@ -100,6 +100,7 @@ void ServerCommunication::
     {
         std::cout << "[WARNING]: ConfigPacket not fully sent." << std::endl;
     }
+<<<<<<< HEAD
     std::cout << "[MESSAGE]: Status byte sent!" << std::endl;
     int image_size_in_bytes = sizeOfPicture * sizeof(unsigned int);
     unsigned char *temp_buffer = (unsigned char *)fullImage;
@@ -111,6 +112,12 @@ void ServerCommunication::
     }
     
     // memcpy(temp_buffer, fullImage, image_size_in_bytes);
+=======
+
+    int image_size_in_bytes = sizeOfPicture * sizeof(unsigned int);
+    unsigned char temp_buffer[image_size_in_bytes];
+    memcpy(temp_buffer, fullImage, image_size_in_bytes);
+>>>>>>> dd00e90a4bead35404aa78577f45065dfff9ac9c
 
     int curr_sent_bytes = 0;
     int last_byte_idx = 0;
@@ -120,7 +127,10 @@ void ServerCommunication::
         if (curr_sent_bytes == -1)
         {
             std::cerr << "[ERROR]: Sending image failed: " << std::strerror(errno) << std::endl;
+<<<<<<< HEAD
             return;
+=======
+>>>>>>> dd00e90a4bead35404aa78577f45065dfff9ac9c
             // TODO: exception handling
         }
         else if (curr_sent_bytes == 0)
@@ -148,9 +158,17 @@ void ServerCommunication::
 {
     size_t sizeInBytes = pixelsCount * sizeof(int);
     // byte conversion
+<<<<<<< HEAD
     unsigned char *bytePixels = (unsigned char *)pixels;
 
     uint64_t diff = ip.calculatePictureDifference(bytePixels, sizeInBytes);
+=======
+    unsigned char *bytePixels = new unsigned char[pixelsCount * 4];
+    bytePixels = (unsigned char *)pixels;
+
+    uint64_t diff = ip.calculatePictureDifference(bytePixels, sizeInBytes);
+    delete[] bytePixels;
+>>>>>>> dd00e90a4bead35404aa78577f45065dfff9ac9c
 
     // check all clients if they should be notified
     mutex.lock();
@@ -197,11 +215,18 @@ void ServerCommunication::
     std::cout << "Picture changed!" << std::endl;
     int height, width;
     getResolution(&height, &width);
+<<<<<<< HEAD
     pixelsCount = height * width;
     if (pixels != nullptr)
     {
         delete[] pixels;
         pixels = nullptr;
+=======
+    int pixelsCount = height * width;
+    if (pixels != nullptr)
+    {
+        delete[] pixels;
+>>>>>>> dd00e90a4bead35404aa78577f45065dfff9ac9c
     }
     pixels = new unsigned int[pixelsCount];
     getCurrentImage(pixels);
@@ -283,7 +308,10 @@ ServerCommunication::~ServerCommunication()
     if (pixels != nullptr)
     {
         delete[] pixels;
+<<<<<<< HEAD
         pixels = nullptr;
+=======
+>>>>>>> dd00e90a4bead35404aa78577f45065dfff9ac9c
     }
 }
 
