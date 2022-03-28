@@ -211,6 +211,7 @@ void ServerCommunication::
     if (pixels != nullptr)
     {
         delete[] pixels;
+        pixels = nullptr;
     }
     pixels = new unsigned int[pixelsCount];
 
@@ -292,11 +293,24 @@ ServerCommunication::~ServerCommunication()
     if (pixels != nullptr)
     {
         delete[] pixels;
+        pixels = nullptr;
     }
 }
 
+<<<<<<< Updated upstream
 ServerCommunication::ServerCommunication() : button([this]()
                                                     { this->changePic(); }),
                                              pixels(nullptr)
+=======
+ServerCommunication::ServerCommunication(SendReceiveInterface &communication) : pixels(nullptr)
+{
+    Button toAssign([this]()
+                  { this->changePic(); });
+    this->button = &toAssign;
+    this->communication = &communication;
+}
+
+ServerCommunication::ServerCommunication(SendReceiveInterface &communication, Button &button) : pixels(nullptr)
+>>>>>>> Stashed changes
 {
 }

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Vladi\Documents\Bosch\motion-detection-tcp\build\CMakeFiles\aa058c8476baf7239eaad2cd118225fa\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{78D18B49-FFF1-3BFF-9E50-7F82B994C1F1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

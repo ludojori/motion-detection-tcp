@@ -20,7 +20,11 @@
 
 namespace motion_detection
 {
+<<<<<<< Updated upstream
 	int JpgReceiveSaveUtils::receiveAndSave(int socketfd, const char *dir, int quality)
+=======
+	int JpgReceiveSaveUtils::receiveAndSave(int socketfd, const char* dir, int quality)
+>>>>>>> Stashed changes
 	{
 		int errorStatus = 0;
 		char statusByte = ' ';

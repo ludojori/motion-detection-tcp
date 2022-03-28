@@ -31,17 +31,18 @@ set(Sources
 )
 
 
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+# include(FetchContent)
+# FetchContent_Declare(
+#   googletest
+#   URL https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip
+# )
+# # For Windows: Prevent overriding the parent project's compiler/linker settings
+# set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# FetchContent_MakeAvailable(googletest)
 
-enable_testing()
+# enable_testing()
 
+<<<<<<< Updated upstream
 add_executable(
   ServerCommunicationTest
   tests/ServerCommunicationTest.cpp
@@ -55,3 +56,37 @@ include(GoogleTest)
 gtest_discover_tests(ServerCommunicationTest)
 
 # add_executable(${This} ${Sources} ${Headers})   
+=======
+# add_executable(
+#   ImageProcessorTest
+#   tests/ImageProcessorTest.cpp
+# )
+# add_executable(
+#   JpegReceiveTest
+#   tests/JpegReceiveTest.cpp
+# )
+# add_executable(
+#   ServerCommunicationTest
+#   tests/ServerCommunicationTest.cpp
+# )
+# target_link_libraries(
+#   ImageProcessorTest
+#   gtest_main
+#   gmock
+# )
+# target_link_libraries(
+#   JpegReceiveTest
+#   gtest_main
+#   gmock
+# )
+# target_link_libraries(
+#   ServerCommunicationTest
+#   gtest_main
+#   gmock
+# )
+
+# include(GoogleTest)
+# gtest_discover_tests(ImageProcessorTest)
+
+add_executable(${This} ${Sources} ${Headers})   
+>>>>>>> Stashed changes

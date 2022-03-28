@@ -1,5 +1,11 @@
 #include "../include/motion-detection-tcp/button.h"
 
+<<<<<<< Updated upstream
+=======
+#include "../include/third-party/camera/camera.h"
+#include "adafruit/bbio.h"
+
+>>>>>>> Stashed changes
 using namespace adafruit::bbio;
 
 Button::Button(std::function<void()> onClick) : clickCheckThread(&Button::checkClicked, this, onClick), buttonAlive(true) {}
