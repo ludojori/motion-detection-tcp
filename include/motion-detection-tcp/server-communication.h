@@ -12,6 +12,7 @@
 
 #include <thread>
 #include <mutex>
+#include <condition_variable>
 
 #include <vector>
 #include <queue>
@@ -28,6 +29,9 @@ class ServerCommunication
 private:
     std::unordered_map<int, uint64_t> sockIDSensitivity;
     std::mutex mutex;
+    std::mutex connectionsMutex;
+    std::condition_variable cvConnections;
+    bool isServerFull;
     ImageProcessor ip;
     Button button; 
     unsigned int* pixels;
@@ -45,7 +49,9 @@ private:
 
 public:
     ServerCommunication();
-
+    ServerCommunication(SendReceiveInterface &communication, Button &button)
+    ServerCommunication(ImageProcessor ip);
+    
     int initServer(char *port);
 
     ~ServerCommunication();

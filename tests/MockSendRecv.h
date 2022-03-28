@@ -1,7 +1,6 @@
 #include "gmock/gmock.h"
 #include "../include/motion-detection-tcp/send-receive-interface.h"
 
-
 class MockSendRecvLogic : public SendReceiveInterface
 {
 public:

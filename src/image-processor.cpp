@@ -3,7 +3,11 @@
 uint64_t
 ImageProcessor::
     getAveragePixels(unsigned char *bytePixels, size_t arraySizeInBytes)
-{
+{   
+    if(bytePixels == nullptr || arraySizeInBytes == 0)
+    {
+        return 0;
+    }
     int sum = 0;
     uint64_t av;
     for (size_t i = 0; i < arraySizeInBytes; i++)

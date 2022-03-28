@@ -51,6 +51,7 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "condition_variable": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "xlocmes": "cpp"
     }
 }

@@ -48,7 +48,7 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
-[Bb][Uu][Ii][Ll][Dd]
+[Bb][Uu][Ii][Ll][Dd]/
 # VS Code files for those working on multiple tools
 .vscode/*
 !.vscode/settings.json
@@ -56,6 +56,7 @@ _deps
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+*.json
 
 # Other related to project
 *.jpg
