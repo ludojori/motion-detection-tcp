@@ -35,11 +35,6 @@ private:
     unsigned int* pixels;
     // std::mutex picChangeMutex; 
     // std::condition_variable picChangeCv;
-<<<<<<< HEAD
-    int pixelsCount;
-=======
->>>>>>> dd00e90a4bead35404aa78577f45065dfff9ac9c
-//  protected:
 
 public:
     ServerCommunication();
