@@ -1,0 +1,6 @@
+bin/
+images/
+tests/
+*.o
+!camera_arm32.o
+!camera_arm64.o
