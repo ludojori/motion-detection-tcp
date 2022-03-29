@@ -17,14 +17,16 @@ void ServerCommunication::
 void ServerCommunication::
     disconnectClient(const int sockID, bool shouldCloseSocket = false)
 {
+    mutex.lock();
     sockIDSensitivity.erase(sockID);
+    mutex.unlock();
     if (shouldCloseSocket)
     {
         close(sockID);
     }
     std::unique_lock<std::mutex> lock(connectionsMutex);
     cvConnections.notify_all();
-    isServerFull = false; 
+    isServerFull = false;
     std::cout << "[MESSAGE]: A client has disconnected. Remaining clients: " << sockIDSensitivity.size() << std::endl;
 }
 
@@ -33,23 +35,19 @@ void ServerCommunication::
 {
     uint64_t sens;
     const int SENSITIVITY_LENGTH = sizeof(uint64_t);
-    int sens_bytes = recv(sockID, &sens, SENSITIVITY_LENGTH, 0);
+    int sensBytes = recv(sockID, &sens, SENSITIVITY_LENGTH, 0);
 
-    if (sens_bytes == -1)
+    if (sensBytes == -1)
     {
         std::cerr << "[ERROR]: Sensitivity receival failed: " << std::strerror(errno) << std::endl;
         return;
     }
-    else if (sens_bytes != sizeof(sens))
+    else if (sensBytes != sizeof(sens))
     {
         std::cout << "[WARNING]: Partially received sensitivity threshold." << std::endl;
     }
 
-    std::cout << "[MESSAGE]: Before register: sens = " << sens << std::endl;
     registerClient(sockID, sens);
-    mutex.lock();
-    std::cout << "[MESSAGE]: Sensitivity: " << sens << " from map: " << sockIDSensitivity.at(sockID) << std::endl;
-    mutex.unlock();
 }
 
 bool ServerCommunication::
@@ -79,11 +77,13 @@ void ServerCommunication::
     if (send(sockID, &statusByte, 1, 0) == -1)
     {
         std::cerr << "[ERROR]: Sending status byte failed: " << std::strerror(errno) << std::endl;
+        return;
     }
 
     if (!isSocketConnected(sockID))
     {
         disconnectClient(sockID);
+        return;
     }
 
     struct ConfigPacket packet;
@@ -93,13 +93,13 @@ void ServerCommunication::
     sendConfigPacket(sockID, &packet);
     sendImage(sockID, fullImage);
 
-    std::cout << "[MESSAGE]: Done." << std::endl;
+    std::cout << "[MESSAGE]: Image sent." << std::endl;
 }
 
 void ServerCommunication::sendConfigPacket(int sockID, ConfigPacket *packet)
 {
-    std::cout << "[MESSAGE]: Sending ConfigPacket with parameters: width = "
-              << packet->imageWidth << " height = " << packet->imageHeight << " ..." << std::endl;
+    std::cout << "[MESSAGE]: Sending ConfigPacket with parameters: width = " << packet->imageWidth
+              << " height = " << packet->imageHeight << " ..." << std::endl;
 
     int packet_bytes = send(sockID, packet, sizeof(ConfigPacket), 0);
     if (packet_bytes == -1)
@@ -129,7 +129,7 @@ void sendImage(int sockID, unsigned int *fullImage, int imageSize)
         if (currSentBytes == -1)
         {
             std::cerr << "[ERROR]: Sending image failed: " << std::strerror(errno) << std::endl;
-            // TODO: exception handling
+            return;
         }
         else if (currSentBytes == 0)
         {
@@ -157,7 +157,7 @@ void sendImage(int sockID, unsigned int *fullImage, int imageSize)
         // byte conversion
         bytePixels = (unsigned char *)pixels;
         uint64_t diff = ip.calculatePictureDifference(bytePixels, sizeInBytes);
-        
+
         // check all clients if they should be notified
         mutex.lock();
         int notifiedClientsCount = 0;
@@ -184,7 +184,7 @@ void sendImage(int sockID, unsigned int *fullImage, int imageSize)
                 char statusByte = static_cast<char>(Status::STILL_IMAGE);
                 if (send(i.first, &statusByte, 1, 0) == -1)
                 {
-                    std::cerr << "[ERROR]: Sending status byte failed: " << std::strerror(errno) << std::endl;
+                    // std::cerr << "[ERROR]: Sending status byte failed: " << std::strerror(errno) << std::endl;
                     disconnectClient(i.first, true);
                 }
 
@@ -246,9 +246,7 @@ void sendImage(int sockID, unsigned int *fullImage, int imageSize)
             std::cerr << "[ERROR]: Function listen() failed: " << std::strerror(errno) << std::endl;
         }
 
-        std::vector<std::thread> threads;
-        // std::thread change_pic_thread(&button.changePic, &button, pixels, picChangeMutex, picChangeCv);
-        // std::thread notify_click_thread(&ServerCommunication::changePic, this);
+        // std::vector<std::thread> threads;
         std::thread check_connected_clients_thread(&ServerCommunication::checkConnectedClients, this);
 
         // may be in separate function
@@ -260,7 +258,7 @@ void sendImage(int sockID, unsigned int *fullImage, int imageSize)
                 std::unique_lock<std::mutex> lock(connectionsMutex);
                 cvConnections.wait(lock);
                 continue;
-                
+
                 // wait until disconnect
             }
             std::cout << "[MESSAGE]: Listening..." << std::endl;
@@ -274,12 +272,12 @@ void sendImage(int sockID, unsigned int *fullImage, int imageSize)
                 return (int)errno;
             }
             std::cout << "[MESSAGE]: Connection accepted. SockID: " << sockID << std::endl;
-            // TODO: sync
+
             readSensitivity(sockID);
-            //threads.emplace_back(&ServerCommunication::readSensitivity, this, sockID);
+            // Alternative:
+            // threads.emplace_back(&ServerCommunication::readSensitivity, this, sockID);
             std::cout << "[MESSAGE]: Number of connections accepted: " << sockIDSensitivity.size() << std::endl;
         }
-        // change_pic_thread.join();
         check_connected_clients_thread.join();
     }
 
@@ -292,7 +290,7 @@ void sendImage(int sockID, unsigned int *fullImage, int imageSize)
         }
     }
 
-    ServerCommunication::ServerCommunication(SendReceiveInterface & communication) 
+    ServerCommunication::ServerCommunication(SendReceiveInterface & communication)
         : pixels(nullptr), isServerFull(false)
     {
         Button toAssign([this]()

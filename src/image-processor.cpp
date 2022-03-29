@@ -19,7 +19,8 @@ ImageProcessor::
         sum += bytePixels[i];
     }
     std::cout << "sum: " << sum << std::endl;
-    av = sum / (arraySizeInBytes / 4);
+    const int PIXEL_SIZE_IN_BYTES = 4;
+    av = sum / (arraySizeInBytes / PIXEL_SIZE_IN_BYTES);
     return av;
 }
 

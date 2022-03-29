@@ -20,7 +20,7 @@
 
 namespace motion_detection
 {
-	int JpgReceiveSaveUtils::receiveAndSave(int socketfd, const char* dir, int quality)
+	int JpgReceiveSaveUtils::receiveAndSave(int socketfd, const char *dir, int quality)
 	{
 		int errorStatus = 0;
 		char statusByte = ' ';
@@ -36,7 +36,7 @@ namespace motion_detection
 
 			if (statusByte == (char)Status::STILL_IMAGE)
 			{
-				std::cout << "[MESSAGE]: Received status byte STILL_IMAGE." << std::endl;
+				// std::cout << "[MESSAGE]: Received status byte STILL_IMAGE." << std::endl;
 				continue;
 			}
 			else if (statusByte == (char)Status::MOTION_DETECTED)
@@ -54,7 +54,7 @@ namespace motion_detection
 				}
 
 				int imageSize = packet.imageWidth * packet.imageHeight;
-				unsigned int *imageBuffer = new unsigned int[imageSize] { 0 };
+				unsigned int *imageBuffer = new unsigned int[imageSize]{0};
 
 				std::cout << "[MESSAGE]: Receiving image..." << std::endl;
 				errorStatus = receiveImage(socketfd, imageBuffer, imageSize);
@@ -87,17 +87,19 @@ namespace motion_detection
 
 		if (packetBytes == -1)
 		{
-			std::cerr << "[ERROR]: Receiving ConfigPacket failed: " << std::strerror(errno) << std::endl;
+			std::cerr << "[ERROR]: Receiving ConfigPacket failed: "
+					  << std::strerror(errno) << std::endl;
 			return (int)errno;
 		}
 		else if (packetBytes != sizeof(ConfigPacket))
 		{
-			std::cout << "[WARNING]: ConfigPacket not fully received." << std::endl;
+			std::cout << "[WARNING]: ConfigPacket not fully received."
+					  << std::endl;
 		}
 		else
 		{
-			std::cout << "[MESSAGE]: ConfigPacket received with parameters: width = "
-				<< packet->imageWidth << " height = " << packet->imageHeight << std::endl;
+			std::cout << "[MESSAGE]: ConfigPacket received with parameters: width = " << packet->imageWidth
+					  << " height = " << packet->imageHeight << std::endl;
 		}
 
 		return 0;
@@ -105,14 +107,14 @@ namespace motion_detection
 
 	int JpgReceiveSaveUtils::receiveImage(int socketfd, unsigned int *imageBuffer, const int imageSize)
 	{
-		unsigned char* bufferPtr = (unsigned char*)imageBuffer;
+		unsigned char *bufferPtr = (unsigned char *)imageBuffer;
 
 		int imageSizeInBytes = imageSize * sizeof(unsigned int);
 		int currRecvBytes = 0;
-		int lastByteIdx = 0;
+		int lastByteIndex = 0;
 		while (true)
 		{
-			currRecvBytes = recv(socketfd, bufferPtr + lastByteIdx, imageSizeInBytes - lastByteIdx, 0);
+			currRecvBytes = recv(socketfd, bufferPtr + lastByteIndex, imageSizeInBytes - lastByteIndex, 0);
 			if (currRecvBytes == -1)
 			{
 				std::cerr << "[ERROR]: Receiving image failed: " << std::strerror(errno) << std::endl;
@@ -124,15 +126,15 @@ namespace motion_detection
 				break;
 			}
 
-			lastByteIdx += currRecvBytes;
-			if (lastByteIdx > imageSizeInBytes)
+			lastByteIndex += currRecvBytes;
+			if (lastByteIndex > imageSizeInBytes)
 			{
 				std::cout << "[WARNING]: Byte index exceeded buffer size by "
-						  << imageSizeInBytes - lastByteIdx << " bytes." << std::endl;
+						  << imageSizeInBytes - lastByteIndex << " bytes." << std::endl;
 			}
 			else
 			{
-				std::cout << "[MESSAGE]: Received " << lastByteIdx << "/" << imageSizeInBytes
+				std::cout << "[MESSAGE]: Received " << lastByteIndex << "/" << imageSizeInBytes
 						  << " bytes..." << std::endl;
 			}
 		}

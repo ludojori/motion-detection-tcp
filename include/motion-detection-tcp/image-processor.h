@@ -1,19 +1,10 @@
 #ifndef IMAGE_PROCESSOR_H
 #define IMAGE_PROCESSOR_H
 
-#include "../third-party/camera/camera.h"
 #include "tcp-protocol.h"
 
 #include <iostream>
 #include <cstring>
-
-#include <thread>
-#include <mutex>
-
-#include <vector>
-#include <queue>
-#include <unordered_map>
-
 
 class ImageProcessor
 {

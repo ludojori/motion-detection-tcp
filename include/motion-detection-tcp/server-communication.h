@@ -5,7 +5,6 @@
 #include "tcp-protocol.h"
 #include "image-processor.h"
 #include "button.h"
-#include "adafruit/bbio.h"
 
 #include <iostream>
 #include <cstring>
@@ -32,8 +31,10 @@ private:
     std::mutex connectionsMutex;
     std::condition_variable cvConnections;
     bool isServerFull;
+
     ImageProcessor ip;
     Button button; 
+    
     unsigned int* pixels;
 
     void registerClient(int sockID, uint64_t sensitivity);

@@ -57,6 +57,7 @@ _deps
 !.vscode/extensions.json
 *.code-workspace
 *.json
+desktop.ini
 
 # Other related to project
 *.jpg

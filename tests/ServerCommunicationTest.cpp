@@ -6,8 +6,8 @@
 #include "MockImageProcessor.h"
 
 using ::testing::_;
-using ::testing::Return;
 using ::testing::AtLeast;
+using ::testing::Return;
 
 class ServerCommunicationTestClass
 {
@@ -64,16 +64,22 @@ public:
         serverCommunication->sockIDSensitivity.insert({sockID, sensitivity});
     }
 };
-
+class Utility : public testing::Test
+{
+protected:
+    static void SetUp()
+    {
+        MockSendRecvLogic communication;
+        MockButton mockedButton([]()
+                                { return; });
+        ServerCommunicationTestClass testClass;
+        MockImageProcessor ip;
+        ServerCommunication server(communication, mockedButton, ip);
+        testClass.serverCommunication = &server;
+    }
+};
 TEST(ServerCommunicationTest, registerClientTest)
 {
-
-    MockSendRecvLogic communication;
-    MockButton mockedButton([]()
-                            { return; });
-    ServerCommunicationTestClass testClass;
-    ServerCommunication server(communication, mockedButton);
-    testClass.serverCommunication = &server;
     int sockID = 42;
     uint64_t sensitivity = 123;
 
@@ -83,13 +89,6 @@ TEST(ServerCommunicationTest, registerClientTest)
 
 TEST(ServerCommunicationTest, disconnectClientTest)
 {
-
-    MockSendRecvLogic communication;
-    MockButton mockedButton([]()
-                            { return; });
-    ServerCommunicationTestClass testClass;
-    ServerCommunication server(communication, mockedButton);
-    testClass.serverCommunication = &server;
     int sockID = 42;
     uint64_t sensitivity = 123;
 
@@ -99,13 +98,6 @@ TEST(ServerCommunicationTest, disconnectClientTest)
 }
 TEST(ServerCommunicationTest, readSensitivityTest)
 {
-
-    MockSendRecvLogic communication;
-    MockButton mockedButton([]()
-                            { return; });
-    ServerCommunicationTestClass testClass;
-    ServerCommunication server(communication, mockedButton);
-    testClass.serverCommunication = &server;
     int sockID = 42;
     uint64_t sensitivity = 123;
 
@@ -114,13 +106,6 @@ TEST(ServerCommunicationTest, readSensitivityTest)
 }
 TEST(ServerCommunicationTest, readSensitivityTest)
 {
-
-    MockSendRecvLogic communication;
-    MockButton mockedButton([]()
-                            { return; });
-    ServerCommunicationTestClass testClass;
-    ServerCommunication server(communication, mockedButton);
-    testClass.serverCommunication = &server;
     int sockID = 42;
     uint64_t sensitivity = 123;
 
@@ -129,13 +114,6 @@ TEST(ServerCommunicationTest, readSensitivityTest)
 }
 TEST(ServerCommunicationTest, notifyClientsTest)
 {
-    MockSendRecvLogic communication;
-    MockButton mockedButton([]()
-                            { return; });
-    ServerCommunicationTestClass testClass;
-    MockImageProcessor ip;
-    ServerCommunication server(communication, mockedButton, ip);
-    testClass.serverCommunication = &server;
     for (int i = 0; i < 10; i++)
     {
         testClass.addClient(i, 2 * i); // sensitivity varies in range[0;20]
